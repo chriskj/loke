@@ -16,9 +16,10 @@ def handle_message(config, sc, event):
     with open(config['auto_response'], mode='r') as infile:
         responses = json.load(infile)
 
-    # Split the written message into a list (split by space)
-    for word in event['text'].split():
-        for response in responses:
+    # Loop through the dictionary from CSV file
+    for response in responses:
+        # Split the written message into a list (split by space)
+        for word in event['text'].split():
             word = word.lower()
             if response['type'] == 'ratio':
                 #print word, response['key'], SM(None, word, response['key']).ratio()
@@ -30,6 +31,7 @@ def handle_message(config, sc, event):
             if match:
                 sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'],
                         text=response['response'].encode('utf-8'))
+                break # Don't repeat same response for multiple hits
 
 def handle_presence_change(config, sc, event):
     # See if a user in list travelers becomes available
