@@ -25,11 +25,12 @@ class Loke(object):
         for response in responses:
             # Split the written message into a list (split by space)
             for word in event['text'].split():
-                word = word.lower()
+                word = word.lower().strip('\r\t\n,.')
                 if response['type'] == 'ratio':
-                    #print word, response['key'], SM(None, word, response['key']).ratio()
+                    #print response['key'], word, SM(None, word, response['key']).ratio()
                     match = SM(None, word, response['key']).ratio() > 0.85
-                elif response['type'] == 'match':
+                elif response['type'] == 'equal':
+                    #print response['key'], word, response['type'] == 'equal'
                     match = response['key'] == word
                 else:
                     match = False
