@@ -5,7 +5,7 @@ from slackclient import SlackClient
 from difflib import SequenceMatcher as SM
 from configobj import ConfigObj
 
-def main(config, sc):
+def main():
     config = ConfigObj('config.ini')
     sc = SlackClient(config['token'])
     if not sc.rtm_connect():
