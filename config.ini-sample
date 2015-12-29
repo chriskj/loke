@@ -7,7 +7,7 @@ ownid =
 
 
 # Name of database file
-auto_response = auto_response.csv
+auto_response = auto_response.json
 
 # Gjallarhorn users
 user_baa = U0GPF9QLB
