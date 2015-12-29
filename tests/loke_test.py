@@ -46,6 +46,13 @@ class LokeTestCase(unittest.TestCase):
         self.sc_mock.api_call.assert_called_once_with("chat.postMessage", as_user="true:",
                 channel=config['chan_general'], text='<@dummy> is alive!! Skal han booke fly mon tro?!')
 
+    def test_handle_presence_change_rate_limit(self):
+        self.loke.handle_presence_change( {'user': 'dummy', 'presence': 'active'})
+        self.loke.handle_presence_change( {'user': 'dummy', 'presence': 'active'})
+        self.loke.handle_presence_change( {'user': 'dummy', 'presence': 'active'})
+        self.sc_mock.api_call.assert_called_once_with("chat.postMessage", as_user="true:",
+                channel=config['chan_general'], text='<@dummy> is alive!! Skal han booke fly mon tro?!')
+
 if __name__ == '__main__':
     logging.getLogger().setLevel(logging.DEBUG)
     unittest.main()

@@ -10,6 +10,7 @@ from config import config
 class Loke(object):
     def __init__(self):
         self.sc = None
+        self.presence_rate_limit = {}
 
     def handle_message(self, event):
         # Ignore own messages by bot
@@ -39,7 +40,13 @@ class Loke(object):
 
     def handle_presence_change(self, event):
         # See if a user in list travelers becomes available
-        if event['user'] in config['list_travelers'] and event['presence'] == "active":
+        user = event['user']
+        if not user in self.presence_rate_limit:
+            self.presence_rate_limit[user] = None
+        if user in config['list_travelers'] and event['presence'] == "active":
+            if self.presence_rate_limit[user] == self._get_today():
+                return # Have already nagged today
+            self.presence_rate_limit[user] = self._get_today()
             self.sc.api_call("chat.postMessage", as_user="true:", channel=config['chan_general'], text='<@%s> is alive!! Skal han booke fly mon tro?!' % event['user'])
 
     def _get_today(self):
