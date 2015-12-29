@@ -4,10 +4,10 @@ import csv
 import json
 from slackclient import SlackClient
 from difflib import SequenceMatcher as SM
-from configobj import ConfigObj
+from config import config
 
 
-def handle_message(config, sc, event):
+def handle_message(sc, event):
     # Ignore own messages by bot
     if event['user'] == config['ownid']:
         return
@@ -33,13 +33,12 @@ def handle_message(config, sc, event):
                         text=response['response'].encode('utf-8'))
                 break # Don't repeat same response for multiple hits
 
-def handle_presence_change(config, sc, event):
+def handle_presence_change(sc, event):
     # See if a user in list travelers becomes available
     if event['user'] in config['list_travelers'] and event['presence'] == "active":
         sc.api_call("chat.postMessage", as_user="true:", channel=config['chan_general'], text='<@%s> is alive!! Skal han booke fly mon tro?!' % event['user'])
 
 def main():
-    config = ConfigObj('config.ini')
     sc = SlackClient(config['token'])
     if not sc.rtm_connect():
         print "Connection Failed, invalid token?"
@@ -51,10 +50,10 @@ def main():
             print event
             try:
                 if event['type'] == "message":
-                    handle_message(config, sc, event)
+                    handle_message(sc, event)
 
                 if event['type'] == "presence_change":
-                    handle_presence_change(config, sc, event)
+                    handle_presence_change(sc, event)
             except KeyError:
                 # TODO(vegawe): When does this happen? Should not be necessary
                 print("Key not found in dict")
