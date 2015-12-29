@@ -11,11 +11,11 @@ def main():
     if not sc.rtm_connect():
         print "Connection Failed, invalid token?"
         return
-    
+
     while True:
         new_events = sc.rtm_read()
         for event in new_events:
-        
+
             # Respond to messages
             try:
                 # Respond to messages, but ignore own messages by bot
@@ -37,16 +37,16 @@ def main():
                         conn.close()
             except KeyError:
                 print("Key not found in dict")
-            
+
             # See if a user in list travelers becomes available
             try:
                 if event['type'] == "presence_change" and event['user'] in config['list_travelers'] and event['presence'] == "active":
                     sc.api_call("chat.postMessage", as_user="true:", channel=config['chan_general'], text='<@%s> is alive!! Skal han booke fly mon tro?!' % event['user'])
             except KeyError:
                 print("Key not found in dict")
-            
+
             print event
         time.sleep(1)
-    
+
 if __name__ == "__main__":
     main()
