@@ -1,6 +1,7 @@
 # coding=UTF-8
 import time
 import sqlite3
+import csv
 from slackclient import SlackClient
 from difflib import SequenceMatcher as SM
 from configobj import ConfigObj
@@ -11,21 +12,20 @@ def handle_message(config, sc, event):
     if event['user'] == config['ownid']:
         return
 
+    # Open file containing auto-responses
+    with open(config['auto_response'], mode='r') as infile:
+        reader = csv.reader(infile, delimiter=';')
+        responses = {rows[0]:rows[1] for rows in reader}
+
     # Split the written message into a list (split by space)
     for word in event['text'].split():
-        # Bad, temp solution. Need to persist the list after looping through.
-        # Ideally list should be read once pr message (to ensure updates).
-        # DB connection should also happen once, but this will lock the db-file.
-        conn = sqlite3.connect(config['db'])
-        db = conn.cursor()
-        responses = db.execute('select * from auto_response order by key')
-        # Loop through the dictionary from database
-        for key, response in responses:
+        # Loop through the dictionary from CSV file
+        for key, response in responses.iteritems():
             # Compare word to key from dictionary
             if SM(None, word.lower(), key).ratio() > 0.85:
-                sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text=response.encode('utf-8'))
+                sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text=response)
                 print('SequenceMatch: %s - %s ratio: %s' % (word, key, SM(None, word.lower(), key).ratio()))
-        conn.close()
+        #conn.close()
 
 def handle_presence_change(config, sc, event):
     # See if a user in list travelers becomes available

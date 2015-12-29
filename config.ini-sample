@@ -7,7 +7,7 @@ ownid =
 
 
 # Name of database file
-db = db.sqlite
+auto_response = auto_response.csv
 
 # Gjallarhorn users
 user_baa = U0GPF9QLB
@@ -23,4 +23,5 @@ user_robert = U0HCKMF7B
 chan_kjonsvik = D0HCJUUHZ
 chan_general = C0GGBTYA1
 
-list_travelers = U0GPF9QLB, U0GNES4FK, U0GGRK45B, U0GGG8474, U0GGYTGPR, U0HCKMF7B
+# list_travelers = U0GPF9QLB, U0GGRK45B, U0GGG8474, U0GGYTGPR, U0HCKMF7B
+list_travelers = dummy
