@@ -1,9 +1,9 @@
 # coding=UTF-8
 import time
-import csv
 import json
 from slackclient import SlackClient
 from difflib import SequenceMatcher as SM
+
 from config import config
 
 
