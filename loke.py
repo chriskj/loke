@@ -27,7 +27,7 @@ def handle_message(config, sc, event):
                 print('SequenceMatch: %s - %s ratio: %s' % (word, key, SM(None, word.lower(), key).ratio()))
         conn.close()
 
-def handle_presence_change(event):
+def handle_presence_change(config, sc, event):
     # See if a user in list travelers becomes available
     if event['user'] in config['list_travelers'] and event['presence'] == "active":
         sc.api_call("chat.postMessage", as_user="true:", channel=config['chan_general'], text='<@%s> is alive!! Skal han booke fly mon tro?!' % event['user'])
