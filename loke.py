@@ -15,14 +15,17 @@ if sc.rtm_connect():
 			
 			# Respond to messages
 			try:
-				# Respond to messaged, bu ignore self
+				# Respond to messages, but ignore own messages by bot
 				if event['type'] == "message" and event['user'] != config['ownid']:
-					# Split the written message into a list
+					# Split the written message into a list (split by space)
 					for word in event['text'].split():
+						# Bad, temp solution. Need to persist the list after looping through.
+						# Ideally list should be read once pr message (to ensure updates).
+						# DB connection should also happen once, but this will lock the db-file.
 						conn = sqlite3.connect(config['db'])
 						db = conn.cursor()
 						responses = db.execute('select * from auto_response order by key')
-						# Loop through the dictionary provided in the beginning of file
+						# Loop through the dictionary from database
 						for key, response in responses:
 							# Compare word to key from dictionary
 							if SM(None, word.lower(), key).ratio() > 0.85:
@@ -32,9 +35,8 @@ if sc.rtm_connect():
 			except KeyError:
 				print("Key not found in dict")
 		
-			# See if a user becomes available
+			# See if a user in list travelers becomes available
 			try:
-				# Dom't respond to own messages
 				if event['type'] == "presence_change" and event['user'] in config['list_travelers'] and event['presence'] == "active":
 					sc.api_call("chat.postMessage", as_user="true:", channel=config['chan_general'], text='<@%s> is alive!! Skal han booke fly mon tro?!' % event['user'])
 			except KeyError:
