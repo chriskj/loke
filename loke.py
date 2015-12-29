@@ -5,10 +5,13 @@ from slackclient import SlackClient
 from difflib import SequenceMatcher as SM
 from configobj import ConfigObj
 
-config = ConfigObj('config.ini')
-sc = SlackClient(config['token'])
+def main(config, sc):
+	config = ConfigObj('config.ini')
+	sc = SlackClient(config['token'])
+	if not sc.rtm_connect():
+		print "Connection Failed, invalid token?"
+		return
 
-if sc.rtm_connect():
 	while True:
 		new_events = sc.rtm_read()
 		for event in new_events:
@@ -44,6 +47,6 @@ if sc.rtm_connect():
 
 			print event
 		time.sleep(1)
-else:
-	print "Connection Failed, invalid token?"
 
+if __name__ == "__main__":
+	main()
