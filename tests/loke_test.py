@@ -13,7 +13,6 @@ from loke import Loke
 
 class LokeTestCase(unittest.TestCase):
     def setUp(self):
-        config['db'] = os.path.join(test_folder, 'db.sqlite')
         config['auto_response'] = os.path.join(test_folder, '..', 'auto_response.json')
         self.sc_mock = mock.Mock()
         self.loke = Loke()
