@@ -67,14 +67,14 @@ class Loke(object):
                 print event
                 try:
                     if event['type'] == "message":
-                        handle_message(event)
+                        self.handle_message(event)
 
                     if event['type'] == "presence_change":
-                        handle_presence_change(event)
+                        self.handle_presence_change(event)
                 except KeyError:
                     # TODO(vegawe): When does this happen? Should not be necessary
                     print("Key not found in dict")
             time.sleep(1)
 
 if __name__ == "__main__":
-    Loke().init().main()
+    Loke().init().loop()
