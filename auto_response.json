@@ -8,5 +8,6 @@
   {"key": "lundamo",    "type": "equal", "response": "Lundamo - stedet der LRoK regjerer"},
   {"key": "tallinn",    "type": "equal", "response": "Tallinn - stedet som ble viden kjent for feasts"},
   {"key": "spa",        "type": "equal", "response": "Raiom får itj bli me om dokker ska på spa"},
-  {"key": "tur",        "type": "equal", "response": "Turan som tælle!!"}
+  {"key": "tur",        "type": "equal", "response": "Turan som tælle!!"},
+  {"key": "gjallarhorn","type": "ratio", "response": "Da du du du du du du du du du, duuu da di da du de de de"}
 ]
