@@ -7,15 +7,6 @@ import forecastio
 
 from config import config
 
-import feedparser
-
-class Hue(object):
-    def __init__(self):
-        self.ip = None
-
-    def lights_stats(self):
-        print('test')
-
 class Loke(object):
     def __init__(self):
         self.sc = None
