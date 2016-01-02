@@ -1,13 +1,17 @@
 [
-  {"key": "kvitlauk",   "type": "ratio", "response": "Raiom liker ikke hvitløk han..."},
-  {"key": "sylteagurk", "type": "ratio", "response": "Sylteagurk er grønnsaken som tok drepen på de norrøne gudene..."},
-  {"key": "gurka",      "type": "equal", "response": "Gurka høres ut som noe som minner om fandens grønnsak..."},
-  {"key": "landcruiser","type": "ratio", "response": "Landcruiser ja - Rælet av en bil som er over snittet populært blant gruppas medlemmer"},
-  {"key": "volvo",      "type": "equal", "response": "Volvo, ja! Bård har god erfaring med den slags...."},
-  {"key": "feast",      "type": "equal", "response": "Feast på gang? Går vi for Royal feast?"},
-  {"key": "lundamo",    "type": "equal", "response": "Lundamo - stedet der LRoK regjerer"},
-  {"key": "tallinn",    "type": "equal", "response": "Tallinn - stedet som ble viden kjent for feasts"},
-  {"key": "spa",        "type": "equal", "response": "Raiom får itj bli me om dokker ska på spa"},
-  {"key": "tur",        "type": "equal", "response": "Turan som tælle!!"},
-  {"key": "gjallarhorn","type": "ratio", "response": "Da du du du du du du du du du, duuu da di da du de de de"}
+  {"key": "berlin",         "type": "equal", "response": "Berlin blir konge - hvem tar første runden?"},
+  {"key": "claustrophobia", "type": "ratio", "response": "Claustrophobia - Klarer vi komme oss ut i tide?"},
+  {"key": "feast",          "type": "equal", "response": "Feast på gang? Går vi for Royal feast?"},
+  {"key": "gjallarhorn",    "type": "ratio", "response": "Da du du du du du du du du du, duuu da di da du de de de"},
+  {"key": "gurka",          "type": "equal", "response": "Gurka høres ut som noe som minner om fandens grønnsak..."},
+  {"key": "kvitlauk",       "type": "ratio", "response": "Raiom liker ikke hvitløk han..."},
+  {"key": "landcruiser",    "type": "ratio", "response": "Landcruiser ja - Rælet av en bil som er over snittet populært blant gruppas medlemmer"},
+  {"key": "lundamo",        "type": "equal", "response": "Lundamo - stedet der LRoK regjerer"},
+  {"key": "oska",           "type": "equal", "response": "Oska selger durum med beggesaus - 73 53 19 40"},
+  {"key": "ruslan",         "type": "equal", "response": "Legendarisk dataparty på Rosenborg Skole"},
+  {"key": "spa",            "type": "equal", "response": "Raiom får itj bli me om dokker ska på spa"},
+  {"key": "sylteagurk",     "type": "ratio", "response": "Sylteagurk er grønnsaken som tok drepen på de norrøne gudene..."},
+  {"key": "tallinn",        "type": "equal", "response": "Tallinn - stedet som ble viden kjent for feasts"},
+  {"key": "tur",            "type": "equal", "response": "Turan som tælle!!"},
+  {"key": "volvo",          "type": "equal", "response": "Volvo, ja! Bård har god erfaring med den slags...."}
 ]
