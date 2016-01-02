@@ -3,9 +3,18 @@ import time
 import json
 from slackclient import SlackClient
 from difflib import SequenceMatcher as SM
+import forecastio
 
 from config import config
 
+import feedparser
+
+class Hue(object):
+    def __init__(self):
+        self.ip = None
+
+    def lights_stats(self):
+        print('test')
 
 class Loke(object):
     def __init__(self):
@@ -38,6 +47,12 @@ class Loke(object):
                     self.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'],
                             text=response['response'].encode('utf-8'))
                     break # Don't repeat same response for multiple hits
+        
+        # Trigger on call to .weather - Only supports one city
+        if event['text'] == '.weather':
+            forecast = forecastio.load_forecast(config['weather_apikey'], config['weather_lat'], config['weather_lng'])
+            byDay = forecast.daily()
+            self.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='%s weather forecast: %s' % (config['weather_city'], byDay.summary.encode('utf-8')))
 
     def handle_presence_change(self, event):
         # See if a user in list travelers becomes available

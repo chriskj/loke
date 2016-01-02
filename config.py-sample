@@ -20,4 +20,10 @@ config = {
 
     # 'list_travelers': ['U0GPF9QLB', 'U0GGRK45B', 'U0GGG8474', 'U0GGYTGPR', 'U0HCKMF7B']
     'list_travelers':   ['dummy'],
+
+    # Weather - forecast.io
+    'weather_apikey':   '',
+    'weather_city':     'Berlin',
+    'weather_lat':      '52.5161',
+    'weather_lng':      '13.3770',
 }
