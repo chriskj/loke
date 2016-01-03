@@ -45,6 +45,7 @@ class Loke(object):
             byDay = forecast.daily()
             self.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='%s weather forecast: %s' % (config['weather_city'], byDay.summary.encode('utf-8')))
 
+        # Trigger on call to .status - TODO: Move members to config
         if event['text'] == '.status':
             attachment = [{
                 "text": "Status on Project Tur 2016",
