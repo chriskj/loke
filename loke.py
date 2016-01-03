@@ -45,6 +45,33 @@ class Loke(object):
             byDay = forecast.daily()
             self.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='%s weather forecast: %s' % (config['weather_city'], byDay.summary.encode('utf-8')))
 
+        if event['text'] == '.status':
+            attachment = [{
+                "text": "Status on Project Tur 2016",
+                "pretext": "Incoming message from the dark side...",
+                "author_name": "Darth Vader",
+                "author_icon": "http://orig14.deviantart.net/f682/f/2010/331/4/e/darth_vader_icon_64x64_by_geo_almighty-d33pmvd.png",
+                "fields": [
+                {
+                    "title": "Confirmed",
+                    "value": "<@kjonsvik>\n<@ksolheim>\n<@robin>\n ",
+                    "short": "false"
+                },
+                {
+                    "title": "Declined",
+                    "value": "kriberg\n<@lrok>\nRune\n ",
+                    "short": "true"
+                },
+                {
+                    "title": "On hold",
+                    "value": "<@baa>\nBørge\n<@caird>\n<@raiom>\n<@robert>\n<@silasilas>",
+                    "short": "false"
+                }
+                ],
+                "color": "#F35A00"
+            }]
+            self.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
+
     def handle_presence_change(self, event):
         # See if a user in list travelers becomes available
         user = event['user']
