@@ -59,6 +59,13 @@ class Loke(object):
             userid = seenmatch.group(1)
             self.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='<@%s> was last seen: %s' % (userid, time.strftime('%d %B %Y - %H:%M:%S', time.localtime(self.presence_last_seen[userid]))))
 
+        # Trigger on call to .seenall - List all "last seen" timestamps
+        if event['text'] == '.seenall':
+            response = ''
+            for key, value in self.presence_last_seen.iteritems():
+                response = '%s<@%s> - %s\n' % (response, key, time.strftime('%d %B %Y - %H:%M:%S', time.localtime(value)))
+            self.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='%s' % (response))
+
         # Trigger on call to .status - TODO: Move members to config
         if event['text'] == '.status':
             attachment = [{
