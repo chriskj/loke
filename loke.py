@@ -4,6 +4,7 @@ import json
 from slackclient import SlackClient
 from difflib import SequenceMatcher as SM
 import forecastio
+import re
 
 from config import config
 
@@ -11,6 +12,7 @@ class Loke(object):
     def __init__(self):
         self.sc = None
         self.presence_rate_limit = {}
+        self.presence_last_seen = {}
 
     def handle_message(self, event):
         # Ignore own messages by bot
@@ -45,6 +47,12 @@ class Loke(object):
             byDay = forecast.daily()
             self.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='%s weather forecast: %s' % (config['weather_city'], byDay.summary.encode('utf-8')))
 
+        # Trigger on call to .seen - requires that the user has been online since the bot was started
+        seenmatch = re.match(r'\.seen <@(.*)>', event['text'], re.I)
+        if seenmatch:
+            userid = seenmatch.group(1)
+            self.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='<@%s> was last seen: %s' % (userid, time.strftime('%d %B %Y - %H:%M:%S', time.localtime(self.presence_last_seen[userid]))))
+
         # Trigger on call to .status - TODO: Move members to config
         if event['text'] == '.status':
             attachment = [{
@@ -52,10 +60,11 @@ class Loke(object):
                 "pretext": "Incoming message from the dark side...",
                 "author_name": "Darth Vader",
                 "author_icon": "http://orig14.deviantart.net/f682/f/2010/331/4/e/darth_vader_icon_64x64_by_geo_almighty-d33pmvd.png",
+                #"image_url": "http://students.marshall.usc.edu/undergrad/files/2014/09/berlin.jpg",
                 "fields": [
                 {
                     "title": "Confirmed",
-                    "value": "<@kjonsvik>\n<@ksolheim>\n<@robin>\n ",
+                    "value": "<@baa>\n<@kjonsvik>\n<@ksolheim>\n<@raiom>\n<@robin>\n ",
                     "short": "false"
                 },
                 {
@@ -65,7 +74,7 @@ class Loke(object):
                 },
                 {
                     "title": "On hold",
-                    "value": "<@baa>\nBørge\n<@caird>\n<@raiom>\n<@robert>\n<@silasilas>",
+                    "value": "Børge\n<@caird>\n<@robert>\n<@silasilas>",
                     "short": "false"
                 }
                 ],
@@ -76,6 +85,11 @@ class Loke(object):
     def handle_presence_change(self, event):
         # See if a user in list travelers becomes available
         user = event['user']
+        # Capture the last time a user became online
+        if event['presence'] == "active":
+            self.presence_last_seen[user] = time.time()
+            print self.presence_last_seen
+        # Capture the last time a user got "book tickets"-notification
         if not user in self.presence_rate_limit:
             self.presence_rate_limit[user] = None
         if user in config['list_travelers'] and event['presence'] == "active":
