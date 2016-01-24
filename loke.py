@@ -12,11 +12,14 @@ class Loke(object):
     def __init__(self):
         self.sc = None
         self.presence_rate_limit = {}
-        self.presence_last_seen = {}
+        with open(config['last_seen'], mode='r') as infile:
+            self.presence_last_seen = json.load(infile)
 
     def handle_message(self, event):
         # Capture last activity by user
         self.presence_last_seen[event['user']] = time.time()
+        with open(config['last_seen'], mode='w') as outfile:
+            json.dump(self.presence_last_seen, outfile)
 
         # Ignore own messages by bot
         if event['user'] == config['ownid']:
@@ -89,6 +92,8 @@ class Loke(object):
         user = event['user']
         # Capture last activity by user
         self.presence_last_seen[user] = time.time()
+        with open(config['last_seen'], mode='w') as outfile:
+            json.dump(self.presence_last_seen, outfile)
 
         # Capture the last time a user got "book tickets"-notification
         if not user in self.presence_rate_limit:

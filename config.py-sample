@@ -3,6 +3,7 @@ config = {
     'ownid': None, # ID of bot user
 
     'auto_response': 'auto_response.json',
+    'last_seen':        'last_seen.json',
 
     # Gjallarhorn users
     'user_baa':         'U0GPF9QLB',
