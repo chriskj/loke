@@ -15,6 +15,9 @@ class Loke(object):
         self.presence_last_seen = {}
 
     def handle_message(self, event):
+        # Capture last activity by user
+        self.presence_last_seen[event['user']] = time.time()
+
         # Ignore own messages by bot
         if event['user'] == config['ownid']:
             return
@@ -83,12 +86,10 @@ class Loke(object):
             self.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
 
     def handle_presence_change(self, event):
-        # See if a user in list travelers becomes available
         user = event['user']
-        # Capture the last time a user became online
-        if event['presence'] == "active":
-            self.presence_last_seen[user] = time.time()
-            print self.presence_last_seen
+        # Capture last activity by user
+        self.presence_last_seen[user] = time.time()
+
         # Capture the last time a user got "book tickets"-notification
         if not user in self.presence_rate_limit:
             self.presence_rate_limit[user] = None
@@ -96,7 +97,7 @@ class Loke(object):
             if self.presence_rate_limit[user] == self._get_today():
                 return # Have already nagged today
             self.presence_rate_limit[user] = self._get_today()
-            self.sc.api_call("chat.postMessage", as_user="true:", channel=config['chan_general'], text='<@%s> is alive!! Skal han booke fly mon tro?!' % event['user'])
+            self.sc.api_call("chat.postMessage", as_user="true:", channel=config['chan_general'], text='<@%s> is alive!! Skal han booke fly mon tro?!' % user)
 
     def _get_today(self):
         now = time.time()
