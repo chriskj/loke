@@ -5,6 +5,7 @@ from slackclient import SlackClient
 from difflib import SequenceMatcher as SM
 import forecastio
 import re
+import operator
 
 from config import config
 
@@ -62,7 +63,9 @@ class Loke(object):
         # Trigger on call to .seenall - List all "last seen" timestamps
         if event['text'] == '.seenall':
             response = ''
-            for key, value in self.presence_last_seen.iteritems():
+            sorted_response = sorted(self.presence_last_seen.items(), key=operator.itemgetter(1), reverse=True)
+            #for key, value in self.presence_last_seen.iteritems():
+            for key, value in sorted_response:
                 response = '%s<@%s> - %s\n' % (response, key, time.strftime('%d %B %Y - %H:%M:%S', time.localtime(value)))
             self.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='%s' % (response))
 
@@ -77,17 +80,17 @@ class Loke(object):
                 "fields": [
                 {
                     "title": "Confirmed",
-                    "value": "<@baa>\n<@kjonsvik>\n<@ksolheim>\n<@raiom>\n<@robin>\n ",
+                    "value": "<@baa>\n<@khaugen>\n<@kjonsvik>\n<@ksolheim>\n<@raiom>\n<@robin>\n ",
                     "short": "false"
                 },
                 {
                     "title": "Declined",
-                    "value": "kriberg\n<@lrok>\nRune\n ",
+                    "value": "Børge\n<@caird>\nkriberg\n<@lrok>\n<@robert>\nRune ",
                     "short": "true"
                 },
                 {
                     "title": "On hold",
-                    "value": "Børge\n<@caird>\n<@robert>\n<@silasilas>",
+                    "value": "<@silasilas>",
                     "short": "false"
                 }
                 ],
