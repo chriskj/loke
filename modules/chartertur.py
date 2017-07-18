@@ -4,7 +4,10 @@ from loke import LokeEventHandler
 import requests, re
 
 class restplass(object):
+    # Class to look for restplass
+
     def vis_ving(self):
+        # Connect to Ving webpage for Trondheim and look for HTML class-tags to fetch the information required
         match = re.compile('class=\"([^\"]*)\">([^<]*)<')
         url = 'https://www.ving.no/restplasser/DD/A/TRD/-/99/SH/-/-/-/-'
 
@@ -37,19 +40,24 @@ class restplass(object):
         return turdata_all
 
 class CharterturHandler(LokeEventHandler):
+    # Handler to fetch Restplass-data
+
     def handler_version(self):
+        # Handler information
         return("Chartertur")
 
     def __init__(self, loke):
+        # Initiate the handler
         self.loke = loke
         self.loke.register_handler(self)
         print("Loading module: %s" % self.handler_version())
 
     def handle_message(self, event):
-        if event['text'] == '.chartertur':
+        # A message is recieved from Slack
+        if event['text'] == '.chartertur': # Responds to call .chartertur
             tur = restplass()
             turer = tur.vis_ving()
-            response = '*Bleik og sur - vi skal på chartertur!*\n```'
+            response = '*Bleik og sur - vi skal på chartertur!*\n```' # Adding ``` to get fixed width font
             for plass in turer:
                 response += '%s\n' % (plass)
             response += '```'
@@ -59,7 +67,9 @@ class CharterturHandler(LokeEventHandler):
         return
 
     def handle_presence_change(self, event):
+        # A user changes state active/inactive
         return
 
     def handle_loop(self):
+        # handle_loop() is used by handlers to pick up data when it's not triggered by message og presence change (i.e. watch, countdowns++)
         return

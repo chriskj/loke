@@ -4,18 +4,24 @@ import time
 import json
 
 class TurstatusHandler(LokeEventHandler):
+    # Handler to show information about next trip, and to nag user if they haven't decided yet
+
     def handler_version(self):
+        # Handler information
         return("Turstatus")
 
     def __init__(self, loke):
+        # Initiate the handler
         self.loke = loke
         self.loke.register_handler(self)
         print("Loading module: %s" % self.handler_version())
 
-        self.presence_rate_limit = {}
+        self.presence_rate_limit = {} # Used to avoid same user being nagged several times pr day
 
     def handle_message(self, event):
-        # Trigger on call to .status
+        # A message is recieved from Slack
+
+        # Trigger on call to .status and return fixed data
         if event['text'] == '.status':
             attachment = [{
                 "text": "Status on Project Tur 2017",
@@ -45,7 +51,9 @@ class TurstatusHandler(LokeEventHandler):
             return
 
     def handle_presence_change(self, event):
+        # A user changes state active/inactive
         user = event['user']
+
         # Capture the last time a user got "book tickets"-notification
         if not user in self.presence_rate_limit:
             self.presence_rate_limit[user] = None
@@ -60,4 +68,5 @@ class TurstatusHandler(LokeEventHandler):
         return now - (now % (60*60*24))
 
     def handle_loop(self):
+        # handle_loop() is used by handlers to pick up data when it's not triggered by message og presence change (i.e. watch, countdowns++)
         return
