@@ -43,7 +43,7 @@ class CharterturHandler(LokeEventHandler):
     def __init__(self, loke):
         self.loke = loke
         self.loke.register_handler(self)
-        print("Loading module: Chartertur")
+        print("Loading module: %s" % self.handler_version())
 
     def handle_message(self, event):
         if event['text'] == '.chartertur':
@@ -61,3 +61,5 @@ class CharterturHandler(LokeEventHandler):
     def handle_presence_change(self, event):
         return
 
+    def handle_loop(self):
+        return

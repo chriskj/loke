@@ -13,7 +13,7 @@ class SeenHandler(LokeEventHandler):
     def __init__(self, loke):
         self.loke = loke
         self.loke.register_handler(self)
-        print("Loading module: Seen")
+        print("Loading module: %s" % self.handler_version())
 
         self.presence_last_seen = {}
 
@@ -52,7 +52,6 @@ class SeenHandler(LokeEventHandler):
             json.dump(self.presence_last_seen, outfile)
 
 
-    def __str__(self):
-        return "Seen"
-
+    def handle_loop(self):
+        return
 

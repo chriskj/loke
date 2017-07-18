@@ -10,7 +10,7 @@ class TurstatusHandler(LokeEventHandler):
     def __init__(self, loke):
         self.loke = loke
         self.loke.register_handler(self)
-        print("Loading module: Turstatus")
+        print("Loading module: %s" % self.handler_version())
 
         self.presence_rate_limit = {}
 
@@ -59,3 +59,5 @@ class TurstatusHandler(LokeEventHandler):
         now = time.time()
         return now - (now % (60*60*24))
 
+    def handle_loop(self):
+        return

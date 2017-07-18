@@ -6,6 +6,12 @@ class LokeEventHandler:
     def handle_message(self, event):
         raise NotImplementedException()
 
+    def handle_presence_change(self, event):
+        raise NotImplementedException()
+
+    def handle_loop(self):
+        raise NotImplementedException()
+
 class Loke(object):
     def __init__(self, config):
         self.sc = None
@@ -50,7 +56,8 @@ class Loke(object):
                     # TODO(vegawe): When does this happen? Should not be necessary
                     print("Key not found in dict")
                     print(event)
+            #if round(time.time() % 10) == 0:
+            for handler in self._handlers:
+                handler.handle_loop()
             time.sleep(1)
 
-if __name__ == "__main__":
-    Loke().init().loop()

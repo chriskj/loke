@@ -12,7 +12,7 @@ class AutoResponseHandler(LokeEventHandler):
         self.loke = loke
         self.loke.register_handler(self)
 
-        print("Loading module: Autoresponse")
+        print("Loading module: %s" % self.handler_version())
 
     def handle_message(self, event):
         # Ignore own events
@@ -43,3 +43,7 @@ class AutoResponseHandler(LokeEventHandler):
 
     def handle_presence_change(selv, event):
         return
+
+    def handle_loop(self):
+        return
+

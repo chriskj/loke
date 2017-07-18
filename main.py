@@ -11,19 +11,15 @@ from modules.seen import SeenHandler
 from modules.turstatus import TurstatusHandler
 from modules.weather import WeatherHandler
 
-import time
-
-loke = Loke(config).init()
-
-
-AutoResponseHandler(loke)
-AvinorHandler(loke)
-BrewHandler(loke)
-CharterturHandler(loke)
-SeenHandler(loke)
-TurstatusHandler(loke)
-WeatherHandler(loke)
-
-
-
-loke.loop()
+if __name__ == '__main__':
+    loke = Loke(config).init()
+    
+    AutoResponseHandler(loke)
+    AvinorHandler(loke)
+    BrewHandler(loke)
+    CharterturHandler(loke)
+    SeenHandler(loke)
+    TurstatusHandler(loke)
+    WeatherHandler(loke)
+    
+    loke.loop()

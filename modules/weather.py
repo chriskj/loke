@@ -11,7 +11,7 @@ class WeatherHandler(LokeEventHandler):
     def __init__(self, loke):
         self.loke = loke
         self.loke.register_handler(self)
-        print("Loading module: Weather")
+        print("Loading module: %s" % self.handler_version())
 
     def handle_message(self, event):
         # Trigger on call to .weather - Only supports one city
@@ -29,3 +29,5 @@ class WeatherHandler(LokeEventHandler):
     def handle_presence_change(self, event):
         return
 
+    def handle_loop(self):
+        return

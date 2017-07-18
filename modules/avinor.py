@@ -18,7 +18,9 @@ class AvinorHandler(LokeEventHandler):
     def __init__(self, loke):
         self.loke = loke
         self.loke.register_handler(self)
-        print("Loading module: Avinor")
+        print("Loading module: %s" % self.handler_version())
+
+        self.watchlist = {}
 
     def handle_message(self, event):
         avinormatch = re.match(r'\.avinor (.*) (.*) (.*)', event['text'], re.I)
@@ -33,7 +35,34 @@ class AvinorHandler(LokeEventHandler):
                     self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text=message)
             return
 
+        avinormatch = re.match(r'\.avinorwatch (.*) (.*) (.*)', event['text'], re.I)
+        if avinormatch:
+            flight = Flight(avinormatch.group(1), avinormatch.group(2), avinormatch.group(3))
+            if flight:
+                if flight.arrdep == 'D':
+                    self.watchlist[('%s#%s#%s' % (flight.localairport.code, flight.flightno, flight.schedule_time))] = '%s:%s:%s:%s' % (flight.schedule_time, getattr(flight, 'statusname', 'No status available'), getattr(flight, 'statustime', flight.schedule_time), flight.gate)
+                else:
+                    self.watchlist[('%s#%s#%s' % (flight.localairport.code, flight.flightno, flight.schedule_time))] = '%s:%s:%s:%s' % (flight.schedule_time, getattr(flight, 'statusname', 'No status available'), getattr(flight, 'statustime', flight.schedule_time), flight.belt)
+            return
+
     def handle_presence_change(self, event):
+        return
+
+    def handle_loop(self):
+        for item in self.watchlist:
+            data = item.split('#')
+            flight = Flight(data[0], data[1], data[2][:10])
+            if flight.arrdep == 'D':
+                if self.watchlist[item] != ('%s:%s:%s:%s' % (flight.schedule_time, getattr(flight, 'statusname', 'No status available'), getattr(flight, 'statustime', flight.schedule_time), flight.gate)):
+                    message = "*Changed* - Flight: %s (%s)\n%s (%s) - %s (%s)\nTime: %s\nStatus: %s - %s\nGate: %s" % (flight.flightno, flight.airlinename, flight.localairport.name, flight.localairport.code, flight.remoteairport.name, flight.remoteairport.code, datetime.strftime(flight.schedule_time, '%H:%M'), getattr(flight, 'statusname', 'No status available'), datetime.strftime(getattr(flight, 'statustime', flight.schedule_time), '%H:%M'), flight.gate)
+                    self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=self.loke.config['chan_kjonsvik'], text=message)
+                    self.watchlist[('%s#%s#%s' % (flight.localairport.code, flight.flightno, flight.schedule_time))] = '%s:%s:%s:%s' % (flight.schedule_time, getattr(flight, 'statusname', 'No status available'), getattr(flight, 'statustime', flight.schedule_time), flight.gate)
+            else:
+                if self.watchlist[item] != ('%s:%s:%s:%s' % (flight.schedule_time, getattr(flight, 'statusname', 'No status available'), getattr(flight, 'statustime', flight.schedule_time), flight.belt)):
+                    message = "*Changed* - Flight: %s (%s)\n%s (%s) - %s (%s)\nTime: %s\nStatus: %s - %s\nBelt: %s" % (flight.flightno, flight.airlinename, flight.remoteairport.name, flight.remoteairport.code, flight.localairport.name, flight.localairport.code, datetime.strftime(flight.schedule_time, '%H:%M'), getattr(flight, 'statusname', 'No status available'), datetime.strftime(getattr(flight, 'statustime', flight.schedule_time), '%H:%M'), flight.belt)
+                    self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=self.loke.config['chan_kjonsvik'], text=message)
+                    self.watchlist[('%s#%s#%s' % (flight.localairport.code, flight.flightno, flight.schedule_time))] = '%s:%s:%s:%s' % (flight.schedule_time, getattr(flight, 'statusname', 'No status available'), getattr(flight, 'statustime', flight.schedule_time), flight.belt)
+                
         return
 
 
@@ -45,11 +74,11 @@ class Airport:
         self.airports = {}
 
         if not os.path.isfile('cache/avinor_%s.xml' % localairport):
-            urllib.request.urlretrieve('http://flydata.avinor.no/XmlFeed.asp?TimeFrom=48&TimeTo=72&airport=%s' % localairport, 'cache/avinor_%s.xml' % localairport)
+            urllib.request.urlretrieve('http://flydata.avinor.no/XmlFeed.asp?TimeFrom=24&TimeTo=48&airport=%s' % localairport, 'cache/avinor_%s.xml' % localairport)
         else:
             td = datetime.now() - datetime.fromtimestamp(os.path.getmtime('cache/avinor_%s.xml' % localairport))
-            if td.seconds > 600:
-                urllib.request.urlretrieve('http://flydata.avinor.no/XmlFeed.asp?TimeFrom=48&TimeTo=72&airport=%s' % localairport, 'cache/avinor_%s.xml' % localairport)
+            if td.seconds > 150:
+                urllib.request.urlretrieve('http://flydata.avinor.no/XmlFeed.asp?TimeFrom=24&TimeTo=48&airport=%s' % localairport, 'cache/avinor_%s.xml' % localairport)
 
         # airports
         e = xml.etree.ElementTree.parse('cache/avinor_airports.xml').getroot()
@@ -94,7 +123,6 @@ class Flight:
                 self.flightno = flight.find('flight_id').text
                 self.localairport = Airport(airport)
                 self.remoteairport = Airport(flight.find('airport').text)
-                print(flight)
                 self.arrdep = flight.find('arr_dep').text
                 self.schedule_time = flightdate
                 if flight.find('belt') is not None:

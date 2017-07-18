@@ -11,7 +11,7 @@ class BrewHandler(LokeEventHandler):
     def __init__(self, loke):
         self.loke = loke
         self.loke.register_handler(self)
-        print("Loading module: Brew")
+        print("Loading module: %s" % self.handler_version())
 
         # Open file containing brew-information
         with open(self.loke.config['brew'], mode='r') as infile:
@@ -109,4 +109,7 @@ class BrewHandler(LokeEventHandler):
         if brewmatch:
             self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='*List of brews:*\n%s' % ('\n'.join(['%s - %s :: %s' % (key, self.brews[key].get('brewdate', 'Unknown date'), self.brews[key].get('name', 'No Name')) for key, brew in sorted(self.brews.items(), key=lambda i: int(i[0]))])))
             return
+
+    def handle_loop(self):
+        return
 
