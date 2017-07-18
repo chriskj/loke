@@ -66,9 +66,8 @@ class Loke(object):
                     print(event)
 
 
-            #if round(time.time() % 10) == 0: # Run handle_loop() each 10 seconds
-            # handle_loop() is used by handlers to pick up data when it's not triggered by message og presence change (i.e. watch, countdowns++)
-            for handler in self._handlers:
-                handler.handle_loop()
+            if round(time.time()) % 10 == 0: # Run handle_loop() each 10 seconds
+                for handler in self._handlers:
+                    handler.handle_loop()
             time.sleep(1)
 
