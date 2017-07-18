@@ -1,11 +1,4 @@
 # loke
 Loke, a simple bot
 
-Requires the following python packages (pip install)
-
-- difflib
-- forecastio
-- json
-- slackclient
-
-The sample responses are for the Gjallarhorn trip advisory group
+Install required modules into a virtualenv (python3) by using pip -r requirements.txt

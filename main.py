@@ -1,29 +1,29 @@
 # coding=UTF-8
 
+from loke import Loke
 from config import config
 
-from loke import Loke
-from seen import SeenLoke
+from modules.auto_response import AutoResponseHandler
+from modules.avinor import AvinorHandler
+from modules.brew import BrewHandler
+from modules.chartertur import CharterturHandler
+from modules.seen import SeenHandler
+from modules.turstatus import TurstatusHandler
+from modules.weather import WeatherHandler
 
 import time
 
-Loke = Loke(config).init()
+loke = Loke(config).init()
 
-while True:
-    new_events = Loke.sc.rtm_read()
-    for event in new_events:
-        print(event)
-        try:
-            if event['type'] == "message":
-                Loke.handle_message(event)
 
-            if event['type'] == "presence_change":
-                Loke.handle_presence_change(event)
-        except KeyError:
-            # TODO(vegawe): When does this happen? Should not be necessary
-            print("Key not found in dict")
-            print(event)
-    time.sleep(1)
+AutoResponseHandler(loke)
+AvinorHandler(loke)
+BrewHandler(loke)
+CharterturHandler(loke)
+SeenHandler(loke)
+TurstatusHandler(loke)
+WeatherHandler(loke)
 
-#if __name__ == "__main__":
-#    Loke().init().loop()
+
+
+loke.loop()

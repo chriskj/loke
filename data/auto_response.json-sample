@@ -1,0 +1,4 @@
+[
+  {"key": "foo",            "type": "ratio", "response": "Bar"},
+  {"key": "123foo",         "type": "equal", "response": "123Bar"}
+]

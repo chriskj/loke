@@ -1,30 +1,25 @@
+# coding=UTF-8
 config = {
-    'token': None, # Slack bot token
-    'ownid': None, # ID of bot user
+    'token': '', # Slack bot token
+    'ownid': '', # ID of bot user
 
-    'auto_response': 'auto_response.json',
-    'last_seen':        'last_seen.json',
+    # Modules data files
+    'auto_response':    'data/auto_response.json', 
+    'last_seen':        'data/last_seen.json',
+    'brew':             'data/brew.json',
 
-    # Gjallarhorn users
-    'user_baa':         'U0GPF9QLB',
-    'user_caird':       'U0GNES4FK',
-    'user_lrok':        'U0GGRK45B',
-    'user_kjonsvik':    'U0H0ULAQ7',
-    'user_ksolheim':    'U0GGM89A5',
-    'user_raiom':       'U0GGG8474',
-    'user_robin':       'U0GGYTGPR',
-    'user_robert':      'U0HCKMF7B',
+    # Module :: turstatus
+    'chan_general':     '',
 
-    # Channels
-    'chan_kjonsvik':    'D0HCJUUHZ',
-    'chan_general':     'C0GGBTYA1',
-
-    # 'list_travelers': ['U0GPF9QLB', 'U0GGRK45B', 'U0GGG8474', 'U0GGYTGPR', 'U0HCKMF7B']
-    'list_travelers':   ['dummy'],
-
+    # Module :: Weather
     # Weather - forecast.io
     'weather_apikey':   '',
-    'weather_city':     'Berlin',
-    'weather_lat':      '52.5161',
-    'weather_lng':      '13.3770',
+    'weather': {
+        'Berlin': ['52.5161', '13.3770'],
+        'Gdansk': ['54.3482', '18.6543'],
+        'Trondheim': ['63.4306', '10.3952'],
+    },
+    'weather_default': 'Trondheim'
 }
+
+
