@@ -3,6 +3,7 @@
 from loke import Loke
 from config import config
 
+# Import all event handles
 from modules.auto_response import AutoResponseHandler
 from modules.avinor import AvinorHandler
 from modules.brew import BrewHandler
@@ -12,7 +13,7 @@ from modules.turstatus import TurstatusHandler
 from modules.weather import WeatherHandler
 
 if __name__ == '__main__':
-    loke = Loke(config).init()
+    loke = Loke(config).init() # Connect to Slack
     
     AutoResponseHandler(loke)
     AvinorHandler(loke)
@@ -22,4 +23,4 @@ if __name__ == '__main__':
     TurstatusHandler(loke)
     WeatherHandler(loke)
     
-    loke.loop()
+    loke.loop() # Main
