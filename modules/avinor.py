@@ -31,14 +31,16 @@ class AvinorHandler(LokeEventHandler):
         avinormatch = re.match(r'\.avinor (.*) (.*) (.*)', event['text'], re.I) # Regex pattern to see if message received is .avinor with 3 arguments. This will return flight information/status
         if avinormatch:
             flight = Flight(avinormatch.group(1), avinormatch.group(2), avinormatch.group(3)) # Flight object Parameters: Local airport, Flight number, Date
-            if flight:
+            try: # Doing a try since they flight object might be empty (i.e. flight not found)
                 if flight.arrdep == 'D': # Departure flight response
                     message = "*Flight: %s (%s)*\n%s (%s) - %s (%s)\nTime: %s\nStatus: %s - %s\nGate: %s" % (flight.flightno, flight.airlinename, flight.localairport.name, flight.localairport.code, flight.remoteairport.name, flight.remoteairport.code, datetime.strftime(flight.schedule_time, '%H:%M'), getattr(flight, 'statusname', 'No status available'), datetime.strftime(getattr(flight, 'statustime', flight.schedule_time), '%H:%M'), flight.gate)
                     self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text=message)
                 else: # Arrival flight response
                     message = "*Flight: %s (%s)*\n%s (%s) - %s (%s)\nTime: %s\nStatus: %s - %s\nBelt: %s" % (flight.flightno, flight.airlinename, flight.remoteairport.name, flight.remoteairport.code, flight.localairport.name, flight.localairport.code, datetime.strftime(flight.schedule_time, '%H:%M'), getattr(flight, 'statusname', 'No status available'), datetime.strftime(getattr(flight, 'statustime', flight.schedule_time), '%H:%M'), flight.belt)
                     self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text=message)
-            return
+            except: # flight was not found
+                message = "*Error:* Flight %s at %s the %s was not found" % (avinormatch.group(2), avinormatch.group(1), avinormatch.group(3))
+                self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text=message)
 
         avinormatch = re.match(r'\.avinorwatch (.*) (.*) (.*)', event['text'], re.I) # Regex pattern to see if message received is .avinorwatch with 3 arguments. This will add flight to watchlist.
         if avinormatch:
