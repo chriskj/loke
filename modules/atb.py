@@ -37,13 +37,14 @@ class AtBHandler(LokeEventHandler):
                     message = '*%s (id: %s):*\n' % (stopname.title(), stopid)
                     if len(trips) > 0:
                         message += '```'        
-                    for trip in trips:
+                    for trip in trips[:8]:
                         ca = ''
                         if trip['RealTime'] is False:
                             ca = 'Ca '
-                        if trip['ArrivalMinutes'] < 10:
+                        if trip['ArrivalMinutes'] == 0:
+                            message += '%snå - %s %s\n' % (ca, trip['LineNumber'], trip['LineDestination'])
+                        elif trip['ArrivalMinutes'] < 10:
                             message += '%s%s min - %s %s\n' % (ca, trip['ArrivalMinutes'], trip['LineNumber'], trip['LineDestination'])
-
                         else:
                             message += '%s%s - %s %s\n' % (ca, trip['ArrivalTime'], trip['LineNumber'], trip['LineDestination'])
                     if len(trips) > 0:

@@ -7,6 +7,7 @@ config = {
     'auto_response':    'data/auto_response.json', 
     'last_seen':        'data/last_seen.json',
     'brew':             'data/brew.json',
+    'atbstops':          'data/atbstops.json',
 
     # Module :: turstatus
     'chan_general':     '',
@@ -21,5 +22,6 @@ config = {
     },
     'weather_default': 'Trondheim'
 }
+
 
 
