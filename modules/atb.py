@@ -6,6 +6,7 @@ import pytz
 
 from loke import LokeEventHandler
 import re
+import json
 
 class AtBHandler(LokeEventHandler):
     # Handler description
@@ -26,38 +27,28 @@ class AtBHandler(LokeEventHandler):
         # A message is recieved from Slack
         atbmatch = re.match(r'\.atb (.*)', event['text'], re.I)
         if atbmatch:
-            stop = {}
-            stop['key'] = atbmatch.group(1).lower()
-            if stop['key'] == 'pl' or stop['key'] == 'persaunet leir':
-                stop['id'] = 16011368 
-                stop['name'] = 'Persaunet leir mot sentrum'
-            if stop['key'] == 'strindheim':
-                stop['id'] = 16011472
-                stop['name'] = 'Strindheim mot sentrum'
-            if stop['key'] == 'solsiden':
-                stop['id'] = 16010404
-                stop['name'] = 'Solsiden fra sentrum'
-            if stop['key'] == 'gryta':
-                stop['id'] = 16011152
-                stop['name'] = 'Gryta mot sentrum'
-            if stop['key'] == 'vs' or stop['key'] == 'voll studentby':
-                stop['id'] = 16011553
-                stop['name'] = 'Voll studentby mot sentrum'
-             
-            trips = self.atb.GetStopStatus(stop['id'])
-            message = '*%s:*\n' % (stop['name'])
-            message += '```'        
-            for trip in trips:
-                ca = ''
-                if trip['RealTime'] is False:
-                    ca = 'Ca '
-                if trip['ArrivalMinutes'] < 10:
-                    message += '%s%s min - %s %s\n' % (ca, trip['ArrivalMinutes'], trip['LineNumber'], trip['LineDestination'])
+            stopname = atbmatch.group(1).lower()
+            with open(self.loke.config['atbstops'], 'r') as fil:
+                stops = json.load(fil)
 
-                else:
-                    message += '%s%s - %s %s\n' % (ca, trip['ArrivalTime'], trip['LineNumber'], trip['LineDestination'])
-            message += '```'        
-            self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text=message)
+            if stopname in stops:
+                for stopid in stops[stopname]:
+                    trips = self.atb.GetStopStatus(stopid)
+                    message = '*%s (id: %s):*\n' % (stopname.title(), stopid)
+                    if len(trips) > 0:
+                        message += '```'        
+                    for trip in trips:
+                        ca = ''
+                        if trip['RealTime'] is False:
+                            ca = 'Ca '
+                        if trip['ArrivalMinutes'] < 10:
+                            message += '%s%s min - %s %s\n' % (ca, trip['ArrivalMinutes'], trip['LineNumber'], trip['LineDestination'])
+
+                        else:
+                            message += '%s%s - %s %s\n' % (ca, trip['ArrivalTime'], trip['LineNumber'], trip['LineDestination'])
+                    if len(trips) > 0:
+                        message += '```'        
+                    self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text=message)
 
 
         return
@@ -84,7 +75,7 @@ class AtB(object):
             Request={
                 'version': '1.4',
                 'RequestTimestamp': datetime.now(), 
-                'MonitoringRef': '%d' % (stopid,)
+                'MonitoringRef': '%s' % (stopid,)
             },
             RequestExtension={}
         )
