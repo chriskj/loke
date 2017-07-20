@@ -13,6 +13,7 @@ from modules.brew import BrewHandler
 from modules.chartertur import CharterturHandler
 from modules.seen import SeenHandler
 from modules.turstatus import TurstatusHandler
+#from modules.yr import YrHandler
 from modules.weather import WeatherHandler
 
 if __name__ == '__main__':
@@ -25,6 +26,7 @@ if __name__ == '__main__':
     CharterturHandler(loke)
     SeenHandler(loke)
     TurstatusHandler(loke)
+    #YrHandler(loke)
     WeatherHandler(loke)
     
     loke.loop() # Main
