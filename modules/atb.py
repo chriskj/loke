@@ -1,7 +1,6 @@
 # coding=UTF-8
 import zeep
 from datetime import datetime
-from lxml import etree
 import pytz
 
 from loke import LokeEventHandler
