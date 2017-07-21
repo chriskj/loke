@@ -31,12 +31,11 @@ class AtBHandler(LokeEventHandler):
                 stops = json.load(fil)
 
             if stopname in stops:
-                for stopid in stops[stopname]:
-                    trips = self.atb.GetStopStatus(stopid)
-                    message = '*%s (id: %s):*\n' % (stopname.title(), stopid)
-                    if len(trips) > 0:
-                        message += '```'        
-                    for trip in trips[:8]:
+                trips = self.atb.GetMultipleStopStatus(stops[stopname])
+                for stop in trips:
+                    message = '* %s (id: %s):*\n' % (stopname.title(), stop[0]['StopId'])
+                    message += '```'        
+                    for trip in stop[:8]:
                         ca = ''
                         if trip['RealTime'] is False:
                             ca = 'Ca '
@@ -46,10 +45,8 @@ class AtBHandler(LokeEventHandler):
                             message += '%s%s min - %s %s\n' % (ca, trip['ArrivalMinutes'], trip['LineNumber'], trip['LineDestination'])
                         else:
                             message += '%s%s - %s %s\n' % (ca, trip['ArrivalTime'], trip['LineNumber'], trip['LineDestination'])
-                    if len(trips) > 0:
-                        message += '```'        
+                    message += '```'        
                     self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text=message)
-
 
         return
 
@@ -65,6 +62,53 @@ class AtB(object):
     def __init__(self):
         wsdlurl = 'http://st.atb.no/SMWS/SMService.svc?wsdl'
         self.client = zeep.Client(wsdl=wsdlurl)
+
+    def GetMultipleStopStatus(self, stoplist):
+        requestfilter = []
+        for stop in stoplist:
+            requestfilter.append({'MonitoringRef': stop})
+            
+        response = self.client.service.GetMultipleStopMonitoring(
+            ServiceRequestInfo={
+                'RequestorRef':'Loke', 
+                'RequestTimestamp': datetime.now(), 
+            }, 
+            Request={
+                'version': '1.4',
+                'RequestTimestamp': datetime.now(), 
+                'StopMonitoringFilter': requestfilter
+            },
+            RequestExtension={}
+        )
+
+        stops = []
+        for stop in response.Answer.StopMonitoringDelivery:
+            trips = []
+            for item in stop.MonitoredStopVisit:
+                if item.MonitoredVehicleJourney.MonitoredCall.ExpectedDepartureTime is None:
+                    expectedtime = item.MonitoredVehicleJourney.MonitoredCall.AimedDepartureTime.replace(tzinfo=None)
+                    real = False
+                else:    
+                    expectedtime = item.MonitoredVehicleJourney.MonitoredCall.ExpectedDepartureTime
+                    real = True 
+                
+                time = expectedtime.strftime("%H:%M")
+                timediff = int((expectedtime - datetime.now()).seconds/60)
+
+                trip = {}
+                trip['ArrivalMinutes'] = timediff
+                trip['RealTime'] = real
+                trip['ArrivalTime'] = time
+                trip['LineNumber'] = item.MonitoredVehicleJourney.LineRef
+                trip['LineOrigin'] = item.MonitoredVehicleJourney.OriginName
+                trip['LineDestination'] = item.MonitoredVehicleJourney.MonitoredCall.DestinationDisplay
+                trip['StopId'] = item.MonitoringRef
+
+                trips.append(trip)
+
+            if len(trips) > 0:
+                stops.append(trips)    
+        return stops
 
     def GetStopStatus(self, stopid):
         response = self.client.service.GetStopMonitoring(
