@@ -24,13 +24,20 @@ class AtBHandler(LokeEventHandler):
 
     def handle_message(self, event):
         # A message is recieved from Slack
-        atbmatch = re.match(r'\.atb (.*)', event['text'], re.I)
+        #atbmatch = re.match(r'\.atb (.*)', event['text'], re.I)
+        atbmatch = re.match(r'\.atb (\D+) ??(\d*)', event['text'], re.I)
         if atbmatch:
-            stopname = atbmatch.group(1).lower()
+            stopname = atbmatch.group(1).lower().strip()
 
             # Load a full dict of all stops/ids for AtB
             with open(self.loke.config['atbstops'], 'r') as fil:
                 stops = json.load(fil) 
+            
+            # Return number of stops if provided
+            if atbmatch.group(2): 
+                numreturns = int(atbmatch.group(2))
+            else:
+                numreturns = 5 
 
             # Check if provided stopname exist in dict and list all trips for the stop ids related to the name
             if stopname in stops: # Check if stopname is in dict
@@ -38,7 +45,7 @@ class AtBHandler(LokeEventHandler):
                 for stop in trips: # We want one response to Slack for each stop
                     message = '* %s (id: %s):*\n' % (stopname.title(), stop[0]['StopId']) # Message title
                     message += '```'        
-                    for trip in stop[:8]: # Only fetch 8 for each stop
+                    for trip in stop[:numreturns]: # Only fetch a list of $numreturns for each stop
                         ca = ''
                         if trip['RealTime'] is False: # Add Ca prefix if realtime data is not present
                             ca = 'Ca '
