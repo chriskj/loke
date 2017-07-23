@@ -48,7 +48,7 @@ class Loke(object):
         while True:
             new_events = self.sc.rtm_read() # Data from Slack
             for event in new_events:
-                print(event) # Debug
+                #print(event) # Debug
                 try:
                     if event['type'] == "message":
                         self.handle_message(event)
