@@ -4,9 +4,14 @@ import json
 import requests
 import xml.etree.ElementTree as ET
 import re
+from datetime import datetime
+
+# To get Norwegian names for months and days
+import locale
+locale.setlocale(locale.LC_ALL, 'nb_NO.utf8')
 
 class YrHandler(LokeEventHandler):
-    # Handler to show information about next trip, and to nag user if they haven't decided yet
+    # Handler to show weather information from Yr
 
     def handler_version(self):
         # Handler information
@@ -31,6 +36,10 @@ class YrHandler(LokeEventHandler):
 
             data = requests.get(url).text
             xml = ET.fromstring(data).find('forecast')
+
+            # Fetch credit information
+            credit = ET.fromstring(data).find('credit').find('link').attrib['text']
+            crediturl = ET.fromstring(data).find('credit').find('link').attrib['url']
             
             data = {}
             datalist = []
@@ -38,14 +47,14 @@ class YrHandler(LokeEventHandler):
             if xml.find('text'):
                 for item in xml.find('text').find('location').findall('time'):
                     data[item.attrib['from']] = {
-                        'date': item.attrib['from'],
+                        'date': datetime.strptime(item.attrib['from'], "%Y-%m-%d"),
                         'text': item.find('body').text.replace('<strong>','').replace('</strong>',''),
                     }
             
             for item in xml.find('tabular').findall('time'):
                 if not item.attrib['from'][:10] in data:
                     data[item.attrib['from'][:10]] = {
-                        'date': item.attrib['from'][:10]
+                        'date': datetime.strptime(item.attrib['from'][:10],  "%Y-%m-%d")
                     }
                 data[item.attrib['from'][:10]]['temp%s' % (item.attrib['period'])] = item.find('temperature').attrib['value']
                 data[item.attrib['from'][:10]]['windspeed%s' % (item.attrib['period'])] = item.find('windSpeed').attrib['name']
@@ -58,9 +67,8 @@ class YrHandler(LokeEventHandler):
             datalist.sort(key=lambda e: e['date'])
 
             attachment = [{
-                #"text": "Trondheim",
-                #"pretext": "Trondheim",
-                "author_name": "Værvarsel fra Yr, levert av NRK og Meteorologisk institutt",
+                "author_name": credit,
+                "author_link": crediturl,
                 "author_icon": "https://www.yr.no/assets/images/logo-yr-50.png",
                 "fields": [
                 ],
@@ -68,7 +76,7 @@ class YrHandler(LokeEventHandler):
             }]
             for entry in datalist[:6]:
                 attachment[0]['fields'].append({
-                    'title': entry['date'],
+                    'title': datetime.strftime(entry['date'], "%A %d. %B").capitalize(),
                     'value': '%s\n\nTemperatur:\n%s - %s - %s - %s\n\nVind:\n%s, %s, %s, %s' % (entry.get('text', ''), entry.get('temp0', '  '), entry.get('temp1', '  '),entry.get('temp2', '  '),entry.get('temp3', '  '),entry.get('windspeed0', ''),entry.get('windspeed1', ''),entry.get('windspeed2', ''),entry.get('windspeed3', ''),),
                     'short': 'false'
                 })
