@@ -1,6 +1,7 @@
 # coding=UTF-8
 import json
 import re
+import requests
 
 from loke import LokeEventHandler
 
@@ -27,6 +28,7 @@ class BrewHandler(LokeEventHandler):
 
     def handle_message(self, event):
         # A message is recieved from Slack
+
 
         # Add gravity measure to brew. Trigger on call to 
         # .brew <date> gravity add <date> <gravity>
@@ -80,7 +82,7 @@ class BrewHandler(LokeEventHandler):
         brewmatch = re.match(r'\.brew (\d+) del (\w+)', event['text'], re.I)
         if brewmatch:
             if len(self.brews[brewmatch.group(1)]) > 0:
-                if brewmatch.group(2) in self.brews[brewmatch.group(1)] and brewmatch.group(2).upper() != 'OG' and brewmatch.group(2).upper() != 'FG' and brewmatch.group(2).lower() != 'brewdate' and brewmatch.group(2).lower() != 'gravity':
+                if brewmatch.group(2) in self.brews[brewmatch.group(1)] and brewmatch.group(2).upper() != 'OG' and brewmatch.group(2).upper() != 'FG' and brewmatch.group(2).lower() != 'brewdate' and brewmatch.group(2).lower() != 'gravity' and brewmatch.group(2).lower() != 'files':
                     del self.brews[brewmatch.group(1)][brewmatch.group(2)]
                     self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='*Brew:*\n%s' % ('\n'.join(['%s:: %s' % (key, value) for (key, value) in self.brews[brewmatch.group(1)].items()])))
                 # Save data    
@@ -89,11 +91,17 @@ class BrewHandler(LokeEventHandler):
             return
 
         # Show brew information. Trigger on call to 
-        # .brew <date>
+        # .brew <id>
         brewmatch = re.match(r'\.brew (\d+)', event['text'], re.I)
         if brewmatch:
             if len(self.brews[brewmatch.group(1)]) > 0:
                 self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='*Brew:*\n%s' % ('\n'.join(['%s:: %s' % (key, value) for (key, value) in self.brews[brewmatch.group(1)].items()])))
+                if 'files' in self.brews[brewmatch.group(1)].keys():
+                    for fil in self.brews[brewmatch.group(1)]['files']:
+                        filename = '%s%s-%s' % (self.loke.config['brewfiles'], brewmatch.group(1), fil)
+                        with open(filename, 'rb') as data:
+                            res = self.loke.sc.api_call("files.upload", channels=event['channel'], filename=fil, file=data)
+
             return
             
         # Add new empty brew. Trigger on call to 
@@ -121,6 +129,40 @@ class BrewHandler(LokeEventHandler):
         if brewmatch:
             self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='*List of brews:*\n%s' % ('\n'.join(['%s - %s :: %s' % (key, self.brews[key].get('brewdate', 'Unknown date'), self.brews[key].get('name', 'No Name')) for key, brew in sorted(self.brews.items(), key=lambda i: int(i[0]))])))
             return
+
+        # Fetch files if a comment indicates so
+        if 'subtype' in event.keys():
+            comment = ''
+            if event['subtype'] == 'file_comment':
+                comment = event['comment']['comment']
+                url = event['file']['url_private']
+
+            if event['subtype'] == 'file_share':
+                if 'initial_comment' in event['file'].keys():
+                    comment = event['file']['initial_comment']['comment']
+                url = event['file']['url_private']
+
+            # Check if comment indicates fetching files
+            brewmatch = re.match(r'\.brew (\d+) file add', comment, re.I)
+            if brewmatch:
+                if len(self.brews[brewmatch.group(1)]) > 0:
+                    headers = {'Authorization': 'Bearer %s' % self.loke.config['token']} # Needed for authorization
+                    r = requests.get(url, headers=headers, stream=True)
+                    filename = '%s%s-%s' % (self.loke.config['brewfiles'], brewmatch.group(1), event['file']['name'])
+                    if r.status_code == 200:
+                        with open(filename, 'wb') as f:
+                            for chunk in r:
+                                f.write(chunk)
+                        if 'files' not in self.brews[brewmatch.group(1)].keys():
+                            self.brews[brewmatch.group(1)]['files'] = []
+                        self.brews[brewmatch.group(1)]['files'].append(event['file']['name']) # Let the json know we have a file uploaded
+                        # Save data
+                        with open(self.loke.config['brew'], mode='w') as outfile:
+                            json.dump(self.brews, outfile, sort_keys=True, indent=4)
+                    else:
+                        print("Download failed")
+
+
 
     def handle_loop(self):
         # handle_loop() is used by handlers to pick up data when it's not triggered by message og presence change (i.e. watch, countdowns++)

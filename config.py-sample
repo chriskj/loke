@@ -7,10 +7,18 @@ config = {
     'auto_response':    'data/auto_response.json', 
     'last_seen':        'data/last_seen.json',
     'brew':             'data/brew.json',
-    'atbstops':          'data/atbstops.json',
+    'brewfiles':        'data/',
+    'atbstops':         'data/atbstops.json',
 
     # Module :: turstatus
     'chan_general':     '',
+
+    # Module :: Yr
+    'yr_places': {
+        'Vancouver': 'https://www.yr.no/sted/Canada/British_Columbia/Vancouver/varsel.xml',
+        'Oslo':      'https://www.yr.no/sted/Norge/Oslo/Oslo/Oslo/varsel.xml',
+        'Trondheim': 'https://www.yr.no/sted/Norge/S%C3%B8r-Tr%C3%B8ndelag/Trondheim/Trondheim/varsel.xml',
+    },
 
     # Module :: Weather
     # Weather - forecast.io
@@ -22,6 +30,3 @@ config = {
     },
     'weather_default': 'Trondheim'
 }
-
-
-
