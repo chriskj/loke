@@ -29,7 +29,9 @@ class SeenHandler(LokeEventHandler):
         # A message is recieved from Slack
 
         # Capture last activity by user when a message is written
-        self.presence_last_seen[event['user']] = time.time()
+        if 'user' in event.keys():
+            self.presence_last_seen[event['user']] = time.time()
+
         # Save data
         with open(self.loke.config['last_seen'], mode='w') as outfile:
             json.dump(self.presence_last_seen, outfile)

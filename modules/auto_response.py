@@ -22,8 +22,9 @@ class AutoResponseHandler(LokeEventHandler):
         # A message is recieved from Slack
 
         # Ignore own events
-        if event['user'] == self.loke.config['ownid']:
-            return
+        if 'user' in event.keys():
+            if event['user'] == self.loke.config['ownid']:
+                return
 
         # Open file containing auto-responses
         with open(self.loke.config['auto_response'], mode='r') as infile:
