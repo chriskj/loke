@@ -40,8 +40,8 @@ class TfLHandler(LokeEventHandler):
                     }],
                     "color": "#aaaaaa"
                 }]
-                self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=self.loke.config['chan_kjonsvik'], attachments=json.dumps(attachment))
-                #self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
+
+                self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
                 return
 
             tflmatch = re.match(r'\.tfl (.*)', event['text'], re.I)
@@ -73,7 +73,7 @@ class TfLHandler(LokeEventHandler):
                         'short': False
 
                     })
-                #self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=self.loke.config['chan_kjonsvik'], attachments=json.dumps(attachment))
+
                 self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
                 return
 
