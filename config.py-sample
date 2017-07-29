@@ -9,6 +9,7 @@ config = {
     'brew':             'data/brew.json',
     'brewfiles':        'data/',
     'atbstops':         'data/atbstops.json',
+    'ruterstops':       'data/ruterstops.json',
 
     # Module :: turstatus
     'chan_general':     '',
@@ -30,3 +31,4 @@ config = {
     },
     'weather_default': 'Trondheim'
 }
+
