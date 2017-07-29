@@ -5,8 +5,6 @@ import re
 from datetime import datetime
 import dateutil.parser
 
-from config import config
-
 from loke import LokeEventHandler
 
 class RuterHandler(LokeEventHandler):
