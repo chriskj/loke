@@ -82,7 +82,7 @@ class BrewHandler(LokeEventHandler):
         brewmatch = re.match(r'\.brew (\d+) del (\w+)', event['text'], re.I)
         if brewmatch:
             if len(self.brews[brewmatch.group(1)]) > 0:
-                if brewmatch.group(2) in self.brews[brewmatch.group(1)] and brewmatch.group(2).upper() != 'OG' and brewmatch.group(2).upper() != 'FG' and brewmatch.group(2).lower() != 'brewdate' and brewmatch.group(2).lower() != 'gravity' and brewmatch.group(2).lower() != 'files':
+                if brewmatch.group(2) in self.brews[brewmatch.group(1)] and brewmatch.group(2).upper() != 'OG' and brewmatch.group(2).upper() != 'FG' and brewmatch.group(2).lower() != 'gravity' and brewmatch.group(2).lower() != 'files':
                     del self.brews[brewmatch.group(1)][brewmatch.group(2)]
                     self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='*Brew:*\n%s' % ('\n'.join(['%s:: %s' % (key, value) for (key, value) in self.brews[brewmatch.group(1)].items()])))
                 # Save data    
