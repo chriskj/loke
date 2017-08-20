@@ -8,6 +8,7 @@ import urllib.request
 from datetime import datetime
 import dateutil.parser
 from dateutil import tz
+import json
 
 from loke import LokeEventHandler
 
@@ -28,16 +29,46 @@ class AvinorHandler(LokeEventHandler):
 
     def handle_message(self, event):
         # A message is recieved from Slack
-        avinormatch = re.match(r'\.avinor (.*) (.*) (.*)', event['text'], re.I) # Regex pattern to see if message received is .avinor with 3 arguments. This will return flight information/status
+        avinormatch = re.match(r'\.avinor ?(\w{2}\d{2,4})\s?(\w{3})?\s?(\d{4}-\d{2}-\d{2})?', event['text'], re.I) # Regex pattern to see if message received is .avinor with 3 arguments. This will return flight information/status
+
+
+
         if avinormatch:
-            flight = Flight(avinormatch.group(1), avinormatch.group(2), avinormatch.group(3)) # Flight object Parameters: Local airport, Flight number, Date
+            if avinormatch.group(2):
+                airport = avinormatch.group(2)
+            else:
+                airport = 'TRD'
+
+            if avinormatch.group(3):
+                date = avinormatch.group(3)
+            else:
+                date = datetime.strftime(datetime.now(), '%Y-%m-%d')
+
+            flight = Flight(airport, avinormatch.group(1),date) # Flight object Parameters: Local airport, Flight number, Date
             try: # Doing a try since they flight object might be empty (i.e. flight not found)
+                attachment = [{
+                    "author_name": 'Avinor',
+                    "author_link": 'https://www.avinor.no/',
+                    "author_icon": "https://avinor.no/Content/favicon.ico",
+                    "fields": [
+                    ],
+                    "color": "#aaaaaa"
+                }]
+
                 if flight.arrdep == 'D': # Departure flight response
-                    message = "*Flight: %s (%s)*\n%s (%s) - %s (%s)\nTime: %s\nStatus: %s - %s\nGate: %s" % (flight.flightno, flight.airlinename, flight.localairport.name, flight.localairport.code, flight.remoteairport.name, flight.remoteairport.code, datetime.strftime(flight.schedule_time, '%H:%M'), getattr(flight, 'statusname', 'No status available'), datetime.strftime(getattr(flight, 'statustime', flight.schedule_time), '%H:%M'), flight.gate)
-                    self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text=message)
+                    attachment[0]['fields'].append({
+                        'title': 'Flight: %s (%s)' % (flight.flightno, flight.airlinename,),
+                        'value': '%s (%s) - %s (%s)\nDeparture Time: %s\nStatus: %s - %s\nGate: %s' % (flight.localairport.name, flight.localairport.code, flight.remoteairport.name, flight.remoteairport.code, datetime.strftime(flight.schedule_time, '%H:%M'), getattr(flight, 'statusname', 'No status available'), datetime.strftime(getattr(flight, 'statustime', flight.schedule_time), '%H:%M'), flight.gate),
+                        'short': 'false'
+                    })
                 else: # Arrival flight response
-                    message = "*Flight: %s (%s)*\n%s (%s) - %s (%s)\nTime: %s\nStatus: %s - %s\nBelt: %s" % (flight.flightno, flight.airlinename, flight.remoteairport.name, flight.remoteairport.code, flight.localairport.name, flight.localairport.code, datetime.strftime(flight.schedule_time, '%H:%M'), getattr(flight, 'statusname', 'No status available'), datetime.strftime(getattr(flight, 'statustime', flight.schedule_time), '%H:%M'), flight.belt)
-                    self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text=message)
+                    attachment[0]['fields'].append({
+                        'title': 'Flight: %s (%s)' % (flight.flightno, flight.airlinename,),
+                        'value': '%s (%s) - %s (%s)\nArrival Time: %s\nStatus: %s - %s\nBelt: %s' % (flight.remoteairport.name, flight.remoteairport.code, flight.localairport.name, flight.localairport.code, datetime.strftime(flight.schedule_time, '%H:%M'), getattr(flight, 'statusname', 'No status available'), datetime.strftime(getattr(flight, 'statustime', flight.schedule_time), '%H:%M'), flight.belt),
+                        'short': 'false'
+                    })
+
+                self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
             except: # flight was not found
                 message = "*Error:* Flight %s at %s the %s was not found" % (avinormatch.group(2), avinormatch.group(1), avinormatch.group(3))
                 self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text=message)
