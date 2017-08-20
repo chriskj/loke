@@ -39,16 +39,16 @@ class RuterHandler(LokeEventHandler):
                 "author_link": 'http://ruter.no/',
                 "author_icon": "http://www.prosam.org/img/logo/ruter.gif",
                 "fields": [],
-                "color": "#aaaaaa"
+                "color": "#e30619",
+                "mrkdwn_in": ["fields"]
             }]
             
             for stop in stops[stationname]:
 
                 attachment[0]['fields'].append({
                     'title': stop['Name'],
-                    'value': '\n'.join(['%s - %s %s' % (departure['FormattedDepartureTime'], departure['LineRef'], departure['DestinationName']) for departure in ruter.GetDepartures(stop['ID'])[:5]]),
-                    'short': False
-
+                    'value': '```%s```' % '\n'.join(['%s - %s %s' % (departure['FormattedDepartureTime'], departure['LineRef'], departure['DestinationName']) for departure in ruter.GetDepartures(stop['ID'])[:5]]),
+                    'short': 'true'
                 })
 
             self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
