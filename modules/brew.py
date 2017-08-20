@@ -12,6 +12,36 @@ class BrewHandler(LokeEventHandler):
         # Handler information
         return("Brew")
 
+    def _show_brew(self, brew, event):
+        if len(self.brews[brew]) > 0:
+            attachment = [{
+                "author_name": '%s - %s' % (self.brews[brew].get('name', 'No name'), self.brews[brew].get('brewdate', 'No date')),
+                "author_icon": ':beers:',
+                "fields": [
+                ],
+                "color": "#aaaaaa"
+            }]
+
+            attachment[0]['fields'].append({
+                'title': 'Info',
+                'value': '%s' % ('\n'.join(['%s :: %s' % (key, value) for (key, value) in sorted(self.brews[brew].items(), key=lambda x: x[0].lower()) if key != 'FG' and key != 'OG' and key != 'ABV' and key != 'gravity' and key != 'brewdate' and key != 'name' and key != 'files'])),
+                'short': 'true'
+            })
+
+            attachment[0]['fields'].append({
+                'title': 'Gravity',
+                'value': '%s' % ('\n'.join(['%s :: %s' % (key, value) for (key, value) in sorted(self.brews[brew].items(), key=lambda x: x[0].lower()) if key == 'FG' or key == 'OG' or key == 'ABV' or key == 'gravity'])),
+                'short': 'true'
+            })
+                
+            self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
+
+            if 'files' in self.brews[brew].keys():
+                for fil in self.brews[brew]['files']:
+                    filename = '%s%s-%s' % (self.loke.config['brewfiles'], brew, fil)
+                    with open(filename, 'rb') as data:
+                        res = self.loke.sc.api_call("files.upload", channels=event['channel'], filename=fil, file=data)
+
     def __init__(self, loke):
         # Initiate the handler
         self.loke = loke
@@ -40,7 +70,7 @@ class BrewHandler(LokeEventHandler):
                 self.brews[brewmatch.group(1)]['FG'] = max(self.brews[brewmatch.group(1)]['gravity'])[1] # Calculate Final Gravity based on all gravities registered
                 self.brews[brewmatch.group(1)]['gravity'].sort() # Convenience
                 self.brews[brewmatch.group(1)]['ABV'] = "{0:.2f} %".format((float(self.brews[brewmatch.group(1)]['OG'])-float(self.brews[brewmatch.group(1)]['FG']))*float(131.25)) # Calculate Alcohol by Volume from OG/FG
-                self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='*Brew:*\n%s' % ('\n'.join(['%s:: %s' % (key, value) for (key, value) in self.brews[brewmatch.group(1)].items()])))
+                self._show_brew(brewmatch.group(1), event)
                 # Save data
                 with open(self.loke.config['brew'], mode='w') as outfile: 
                     json.dump(self.brews, outfile, sort_keys=True, indent=4)
@@ -58,7 +88,7 @@ class BrewHandler(LokeEventHandler):
                         self.brews[brewmatch.group(1)]['FG'] = max(self.brews[brewmatch.group(1)]['gravity'])[1] # Calculate Final Gravity based on all gravities registered
                         self.brews[brewmatch.group(1)]['gravity'].sort() # Convenience
                         self.brews[brewmatch.group(1)]['ABV'] = "{0:.2f} %".format((float(self.brews[brewmatch.group(1)]['OG'])-float(self.brews[brewmatch.group(1)]['FG']))*float(131.25)) # Calculate Alcohol by Volume from OG/FG
-                        self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='*Brew:*\n%s' % ('\n'.join(['%s:: %s' % (key, value) for (key, value) in self.brews[brewmatch.group(1)].items()])))
+                        self._show_brew(brewmatch.group(1), event)
                         # Save data
                         with open(self.loke.config['brew'], mode='w') as outfile:
                             json.dump(self.brews, outfile, sort_keys=True, indent=4)
@@ -71,7 +101,7 @@ class BrewHandler(LokeEventHandler):
             if len(self.brews[brewmatch.group(1)]) > 0:
                 if brewmatch.group(2) not in self.brews[brewmatch.group(1)]:
                     self.brews[brewmatch.group(1)][brewmatch.group(2)] = brewmatch.group(3)
-                    self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='*Brew:*\n%s' % ('\n'.join(['%s:: %s' % (key, value) for (key, value) in self.brews[brewmatch.group(1)].items()])))
+                    self._show_brew(brewmatch.group(1), event)
                 # Save data    
                 with open(self.loke.config['brew'], mode='w') as outfile:
                     json.dump(self.brews, outfile, sort_keys=True, indent=4)
@@ -84,7 +114,7 @@ class BrewHandler(LokeEventHandler):
             if len(self.brews[brewmatch.group(1)]) > 0:
                 if brewmatch.group(2) in self.brews[brewmatch.group(1)] and brewmatch.group(2).upper() != 'OG' and brewmatch.group(2).upper() != 'FG' and brewmatch.group(2).lower() != 'gravity' and brewmatch.group(2).lower() != 'files':
                     del self.brews[brewmatch.group(1)][brewmatch.group(2)]
-                    self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='*Brew:*\n%s' % ('\n'.join(['%s:: %s' % (key, value) for (key, value) in self.brews[brewmatch.group(1)].items()])))
+                    self._show_brew(brewmatch.group(1), event)
                 # Save data    
                 with open(self.loke.config['brew'], mode='w') as outfile:
                     json.dump(self.brews, outfile, sort_keys=True, indent=4)
@@ -94,14 +124,7 @@ class BrewHandler(LokeEventHandler):
         # .brew <id>
         brewmatch = re.match(r'\.brew (\d+)', event['text'], re.I)
         if brewmatch:
-            if len(self.brews[brewmatch.group(1)]) > 0:
-                self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='*Brew:*\n%s' % ('\n'.join(['%s:: %s' % (key, value) for (key, value) in self.brews[brewmatch.group(1)].items()])))
-                if 'files' in self.brews[brewmatch.group(1)].keys():
-                    for fil in self.brews[brewmatch.group(1)]['files']:
-                        filename = '%s%s-%s' % (self.loke.config['brewfiles'], brewmatch.group(1), fil)
-                        with open(filename, 'rb') as data:
-                            res = self.loke.sc.api_call("files.upload", channels=event['channel'], filename=fil, file=data)
-
+            self._show_brew(brewmatch.group(1), event)
             return
             
         # Add new empty brew. Trigger on call to 
@@ -128,6 +151,7 @@ class BrewHandler(LokeEventHandler):
         brewmatch = re.match(r'\.brew', event['text'], re.I)
         if brewmatch:
             self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='*List of brews:*\n%s' % ('\n'.join(['%s - %s :: %s' % (key, self.brews[key].get('brewdate', 'Unknown date'), self.brews[key].get('name', 'No Name')) for key, brew in sorted(self.brews.items(), key=lambda i: int(i[0]))])))
+
             return
 
         # Fetch files if a comment indicates so
