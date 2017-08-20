@@ -42,21 +42,34 @@ class AtBHandler(LokeEventHandler):
             # Check if provided stopname exist in dict and list all trips for the stop ids related to the name
             if stopname in stops: # Check if stopname is in dict
                 trips = self.atb.GetMultipleStopStatus(stops[stopname]) # Fetch data from AtB
+                attachment = [{
+                    "author_name": 'AtB - sanntid',
+                    'author_link': 'https://www.atb.no/',
+                    "author_icon": 'https://www.atb.no/getfile.php/Bilder/Driftsbilder/logo.png',
+                    "fields": [
+                    ],
+                    "color": "#BFBF28",
+                    "mrkdwn_in": ["fields"]
+                }]
                 for stop in trips: # We want one response to Slack for each stop
-                    message = '* %s (id: %s):*\n' % (stopname.title(), stop[0]['StopId']) # Message title
-                    message += '```'        
+                    attachment[0]['fields'].append({
+                        'title': '%s (id: %s)' % (stopname.title(), stop[0]['StopId']),
+                        'value': '```',
+                        'short': 'true'
+                    })
+
                     for trip in stop[:numreturns]: # Only fetch a list of $numreturns for each stop
                         ca = ''
                         if trip['RealTime'] is False: # Add Ca prefix if realtime data is not present
                             ca = 'Ca '
                         if trip['ArrivalMinutes'] == 0: # Use 'nå' instead of number of minutes
-                            message += '%snå - %s %s\n' % (ca, trip['LineNumber'], trip['LineDestination'])
+                            attachment[0]['fields'][-1]['value'] += '%snå - %s %s\n' % (ca, trip['LineNumber'], trip['LineDestination'])
                         elif trip['ArrivalMinutes'] < 10: # Show number of minutes if it's less than 10 minutes
-                            message += '%s%s min - %s %s\n' % (ca, trip['ArrivalMinutes'], trip['LineNumber'], trip['LineDestination'])
+                            attachment[0]['fields'][-1]['value'] += '%s%s min - %s %s\n' % (ca, trip['ArrivalMinutes'], trip['LineNumber'], trip['LineDestination'])
                         else: # Show time if it's more than 10 minutes
-                            message += '%s%s - %s %s\n' % (ca, trip['DepartureTime'].strftime('%H:%M'), trip['LineNumber'], trip['LineDestination'])
-                    message += '```'        
-                    self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text=message)
+                            attachment[0]['fields'][-1]['value'] += '%s%s - %s %s\n' % (ca, trip['DepartureTime'].strftime('%H:%M'), trip['LineNumber'], trip['LineDestination'])
+                    attachment[0]['fields'][-1]['value'] += '```'        
+                self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
 
         return
 
