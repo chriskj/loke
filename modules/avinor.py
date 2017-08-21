@@ -35,7 +35,7 @@ class AvinorHandler(LokeEventHandler):
 
         if avinormatch:
             if avinormatch.group(2):
-                airport = avinormatch.group(2)
+                airport = avinormatch.group(2).upper()
             else:
                 airport = 'TRD'
 
@@ -44,7 +44,7 @@ class AvinorHandler(LokeEventHandler):
             else:
                 date = datetime.strftime(datetime.now(), '%Y-%m-%d')
 
-            flight = Flight(airport, avinormatch.group(1),date) # Flight object Parameters: Local airport, Flight number, Date
+            flight = Flight(airport, avinormatch.group(1).upper() ,date) # Flight object Parameters: Local airport, Flight number, Date
             try: # Doing a try since they flight object might be empty (i.e. flight not found)
                 attachment = [{
                     "author_name": 'Avinor',
@@ -70,7 +70,7 @@ class AvinorHandler(LokeEventHandler):
 
                 self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
             except: # flight was not found
-                message = "*Error:* Flight %s at %s the %s was not found" % (avinormatch.group(2), avinormatch.group(1), avinormatch.group(3))
+                message = "*Error:* Flight %s at %s the %s was not found" % (avinormatch.group(1).upper(), airport, date)
                 self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text=message)
 
         avinormatch = re.match(r'\.avinorwatch (.*) (.*) (.*)', event['text'], re.I) # Regex pattern to see if message received is .avinorwatch with 3 arguments. This will add flight to watchlist.
