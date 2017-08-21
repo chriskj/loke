@@ -52,7 +52,7 @@ class AvinorHandler(LokeEventHandler):
                     "author_icon": "https://avinor.no/Content/favicon.ico",
                     "fields": [
                     ],
-                    "color": "#aaaaaa"
+                    "color": "#711F50"
                 }]
 
                 if flight.arrdep == 'D': # Departure flight response
