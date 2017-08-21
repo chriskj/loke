@@ -36,7 +36,7 @@ class TfLHandler(LokeEventHandler):
                     "author_icon": "https://tfl.gov.uk/cdn/static/assets/icons/favicon-196x196.png",
                     "fields": [{
                         'title':    'Tube Line Status',
-                        'value':    '\n'.join(['%s %s line - %s' % (str(line['statusid']).replace('10',':white_check_mark:').replace('9',':warning:').replace('6', ':no_entry:'), line['name'], line['statustext']) for line in data]) 
+                        'value':    '\n'.join(['%s %s line - %s' % (str(line['statusid']).replace('10',':white_check_mark:').replace('9',':warning:').replace('6', ':no_entry:').replace('20', ':no_entry:'), line['name'], line['statustext']) for line in data]) 
                     }],
                     "color": "#aaaaaa"
                 }]
