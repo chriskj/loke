@@ -72,7 +72,7 @@ class YrHandler(LokeEventHandler):
                 "author_icon": "https://www.yr.no/assets/images/logo-yr-50.png",
                 "fields": [
                 ],
-                "color": "#aaaaaa"
+                "color": "#00B9F1"
             }]
             for entry in datalist[:6]:
                 attachment[0]['fields'].append({
