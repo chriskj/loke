@@ -30,7 +30,7 @@ class BrewHandler(LokeEventHandler):
             })
 
             attachment[0]['fields'].append({
-                'title': 'Gravity',
+                'title': 'Details',
                 'value': '%s' % ('\n'.join(['%s :: %s' % (key, value) for (key, value) in sorted(self.brews[brew].items(), key=lambda x: x[0].lower()) if key == 'FG' or key == 'OG' or key == 'ABV' or (key == 'gravity' and len(value) > 2)])),
                 'short': 'true'
             })
