@@ -2,6 +2,7 @@
 import json
 import re
 import requests
+import xml.etree.ElementTree as ET
 
 from loke import LokeEventHandler
 
@@ -154,6 +155,40 @@ class BrewHandler(LokeEventHandler):
 
             return
 
+        # List all brews. Trigger on call to 
+        # .brew 
+        brewmatch = re.match(r'\.recipe', event['text'], re.I)
+        if brewmatch:
+            beer = recipe()
+            beer.load('https://www.brewersfriend.com/homebrew/recipe/beerxml1.0/414816')
+            attachment = [{
+                "author_name": 'Beerxml - %s' % beer.name,
+                "author_icon": ':beers:',
+                "fields": [
+                ],
+                "color": "#aaaaaa",
+                "mrkdwn_in": ["fields"]
+            }]
+
+            attachment[0]['fields'].append({
+                'title': 'Fermentables',
+                'value': '```%s```' % ('\n'.join(['%s %s kg' % (fermentable['name'].ljust(10), fermentable['amount']) for (fermentable) in beer.fermentables])),
+            })
+
+            attachment[0]['fields'].append({
+                'title': 'Hops',
+                'value': '```%s```' % ('\n'.join(['%s %s %s %s' % (hop['use'].ljust(10), hop['time'].ljust(6), hop['name'].ljust(20), hop['amount']) for (hop) in sorted(beer.hops, key=lambda x: int(x['time']))])),
+            })
+
+            attachment[0]['fields'].append({
+                'title': 'Misc',
+                'value': '```%s```' % ('\n'.join(['%s %s %s %s' % (misc['use'].ljust(10), misc['time'].ljust(6), misc['name'].ljust(20), misc['amount']) for (misc) in sorted(beer.miscs, key=lambda x: int(x['time']))])),
+            })
+
+            self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
+
+            return
+
         # Fetch files if a comment indicates so
         if 'subtype' in event.keys():
             comment = ''
@@ -191,4 +226,53 @@ class BrewHandler(LokeEventHandler):
     def handle_loop(self):
         # handle_loop() is used by handlers to pick up data when it's not triggered by message og presence change (i.e. watch, countdowns++)
         return
+
+
+
+class recipe(object):
+    def __init__(self):
+        self.name = None
+
+        self.og = None
+        self.fg = None
+        self.abv= None
+        self.ibu = None
+
+        self.hops = []
+        self.fermentables = []
+        self.miscs = []
+        self.yeasts = []
+
+    def load(self, url):
+        data = requests.get(url).text
+        xml = ET.fromstring(data)
+
+        self.name = xml.find('RECIPE').find('NAME').text
+
+        self.abv = xml.find('RECIPE').find('EST_ABV').text
+        self.fg = xml.find('RECIPE').find('EST_FG').text
+        self.og = xml.find('RECIPE').find('EST_OG').text
+
+        for fermentable in xml.find('RECIPE').find('FERMENTABLES'):
+            self.fermentables.append({
+                'name': fermentable.find('NAME').text,
+                'amount': fermentable.find('AMOUNT').text,
+            })
+
+        for hop in xml.find('RECIPE').find('HOPS'):
+            self.hops.append({
+                'name': hop.find('NAME').text,
+                'amount': hop.find('AMOUNT').text,
+                'time': hop.find('TIME').text,
+                'use': hop.find('USE').text,
+            })
+
+        for misc in xml.find('RECIPE').find('MISCS'):
+            self.miscs.append({
+                'name': misc.find('NAME').text,
+                'amount': misc.find('AMOUNT').text,
+                'time': misc.find('TIME').text,
+                'use': misc.find('USE').text,
+            })
+
 
