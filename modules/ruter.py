@@ -84,7 +84,7 @@ class Ruter(object):
     def GetDepartures(self, stopid):    
         url = 'http://reisapi.ruter.no/StopVisit/GetDepartures/%s' % (stopid)
         departures = []
-        for entry in self._FetchData(url)[:5]:
+        for entry in self._FetchData(url):
             departuretime = dateutil.parser.parse(entry['MonitoredVehicleJourney']['MonitoredCall']['AimedDepartureTime']).replace(tzinfo=None)
             timediff = int((departuretime - datetime.now()).seconds/60) # Number of minutes until departure
 
