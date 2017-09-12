@@ -47,7 +47,7 @@ class RuterHandler(LokeEventHandler):
 
                 attachment[0]['fields'].append({
                     'title': stop['Name'],
-                    'value': '```%s```' % '\n'.join(['%s - %s %s' % (departure['FormattedDepartureTime'], departure['LineRef'], departure['DestinationName']) for departure in ruter.GetDepartures(stop['ID'])[:5]]),
+                    'value': '```%s```' % '\n'.join(['%s - %s %s' % (departure['FormattedDepartureTime'], departure['LineRef'], departure['DestinationName']) for departure in ruter.GetDepartures(stop['ID'])[:10]]),
                     'short': 'true'
                 })
 
