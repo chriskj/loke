@@ -11,6 +11,7 @@ from modules.auto_response import AutoResponseHandler
 from modules.avinor import AvinorHandler
 from modules.brew import BrewHandler
 from modules.chartertur import CharterturHandler
+from modules.mannen import MannenHandler
 from modules.ruter import RuterHandler
 from modules.seen import SeenHandler
 from modules.tfl import TfLHandler
@@ -26,6 +27,7 @@ if __name__ == '__main__':
     AvinorHandler(loke)
     BrewHandler(loke)
     CharterturHandler(loke)
+    MannenHandler(loke)
     RuterHandler(loke)
     SeenHandler(loke)
     TfLHandler(loke)
