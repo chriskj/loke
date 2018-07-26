@@ -57,11 +57,13 @@ class SeenHandler(LokeEventHandler):
         # A user changes state active/inactive
 
         user = event['user']
-        # A user is active/inactive - hence the user has been seen
-        self.presence_last_seen[user] = time.time()
-        # Save data
-        with open(self.loke.config['last_seen'], mode='w') as outfile:
-            json.dump(self.presence_last_seen, outfile)
+        # A user is active - hence the user has been seen
+        # We ignore inactive, as the initial subscription will trigger presence change on all users
+        if event['presence'] == 'active':
+            self.presence_last_seen[user] = time.time()
+            # Save data
+            with open(self.loke.config['last_seen'], mode='w') as outfile:
+                json.dump(self.presence_last_seen, outfile)
 
 
     def handle_loop(self):

@@ -60,6 +60,20 @@ class Loke(object):
                         for handler in self._handlers:
                             handler.handle_presence_change(event)
 
+                    # Initial event - subscribe to presence change on all users in channel (Not default as of Jan 18)
+                    if event['type'] == "hello":
+                        print('Subscribing to prescence change')
+
+                        presence_sub_ids = []
+                        users = self.sc.api_call("users.list")
+
+                        for user in users['members']:
+                            presence_sub_ids.append(user['id'])
+
+                        presence_sub_json = {"type": "presence_sub", "ids": presence_sub_ids}
+                        self.sc.server.send_to_websocket(presence_sub_json)
+
+
                 except KeyError:
                     # TODO(vegawe): When does this happen? Should not be necessary
                     print("Key not found in dict")
