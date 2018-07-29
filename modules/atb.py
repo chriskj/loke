@@ -128,7 +128,7 @@ class AtB(object):
                 trip['DepartureTime'] = expectedtime
                 trip['LineNumber'] = item.MonitoredVehicleJourney.LineRef
                 trip['LineOrigin'] = item.MonitoredVehicleJourney.OriginName
-                trip['LineDestination'] = item.MonitoredVehicleJourney.MonitoredCall.DestinationDisplay
+                trip['LineDestination'] = item.MonitoredVehicleJourney.DestinationName
                 trip['StopId'] = item.MonitoringRef
 
                 trips.append(trip)
