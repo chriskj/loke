@@ -29,7 +29,7 @@ class AvinorHandler(LokeEventHandler):
 
     def handle_message(self, event):
         # A message is recieved from Slack
-        avinormatch = re.match(r'\.avinor?', event['text'], re.I) # Regex pattern to see if message received contains .avinor (with or without any arguments)
+        avinormatch = re.match(r'\.avinor', event['text'], re.I) # Regex pattern to see if message received contains .avinor (with or without any arguments)
 
         iatamatch = re.match(r'\.avinor.*?\ (\w{3})(?:$|\ )', event['text'], re.I) # Regex pattern to see if message received is .avinor with a 3 letter IATA argument
         flightnomatch = re.match(r'\.avinor.*?(\w{2}\d{2,4})(?:$|\ )', event['text'], re.I) # Regex pattern to see if message received is .avinor with a flight number
