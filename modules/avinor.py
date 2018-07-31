@@ -29,22 +29,29 @@ class AvinorHandler(LokeEventHandler):
 
     def handle_message(self, event):
         # A message is recieved from Slack
-        avinormatch = re.match(r'\.avinor ?(\w{2}\d{2,4})\s?(\w{3})?\s?(\d{4}-\d{2}-\d{2})?', event['text'], re.I) # Regex pattern to see if message received is .avinor with 3 arguments. This will return flight information/status
+        avinormatch = re.match(r'\.avinor?', event['text'], re.I) # Regex pattern to see if message received contains .avinor (with or without any arguments)
 
+        iatamatch = re.match(r'\.avinor.*?\ (\w{3})(?:$|\ )', event['text'], re.I) # Regex pattern to see if message received is .avinor with a 3 letter IATA argument
+        flightnomatch = re.match(r'\.avinor.*?(\w{2}\d{2,4})(?:$|\ )', event['text'], re.I) # Regex pattern to see if message received is .avinor with a flight number
+        datematch = re.match(r'\.avinor.*?(\d{4}-\d{2}-\d{2})(?:$|\ )', event['text'], re.I) # Regex pattern to see if message received is .avinor with a date argument
 
+        if avinormatch and not flightnomatch:
+            message = '*Error*: Unknown syntax - use .avinor <flightno> _<airport> <date>_ \nExample: _.avinor SK377 TRD 2017-12-24_'
+            self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text=message)
+            return
 
-        if avinormatch:
-            if avinormatch.group(2):
-                airport = avinormatch.group(2).upper()
+        if flightnomatch:
+            if iatamatch:
+                airport = iatamatch.group(1).upper()
             else:
                 airport = 'TRD'
 
-            if avinormatch.group(3):
-                date = avinormatch.group(3)
+            if datematch:
+                date = datematch.group(1)
             else:
                 date = datetime.strftime(datetime.now(), '%Y-%m-%d')
 
-            flight = Flight(airport, avinormatch.group(1).upper() ,date) # Flight object Parameters: Local airport, Flight number, Date
+            flight = Flight(airport, flightnomatch.group(1).upper() ,date) # Flight object Parameters: Local airport, Flight number, Date
             try: # Doing a try since they flight object might be empty (i.e. flight not found)
                 attachment = [{
                     "author_name": 'Avinor',
