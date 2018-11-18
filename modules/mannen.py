@@ -22,16 +22,17 @@ class MannenHandler(LokeEventHandler):
             if event['text'] == '.harmannenfalt':
                 url = 'http://harmannenfalt.no/'
                 response = '*Har Mannen falt?*\n' 
+                match = re.compile('<div id=\"yesnomaybe\">\n(.*)')
             elif event['text'] == '.harveslemannenfalt':
                 url = 'http://harveslemannenfalt.no/'
                 response = '*Har Vesle-Mannen falt?*\n' 
+                match = re.compile('<div class=\"janeikanskje\">\n(.*)')
             else:
                 return
 
             r = requests.get(url)
             sitedata = r.text
 
-            match = re.compile('<div class=\"janeikanskje\">\n(.*)')
 
             svar = match.findall(sitedata)[0].strip().capitalize()
 
