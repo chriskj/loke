@@ -1,0 +1,12 @@
+# Python cache
+*.pyc
+cache/
+
+# Live config
+config.py
+
+# live data files
+data/*.json
+
+# Virtual environment
+env/
