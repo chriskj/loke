@@ -42,7 +42,7 @@ class BysykkelHandler(LokeEventHandler):
 
     def handler_version(self):
         # Handler information
-        return("CharteBysykkel")
+        return("Bysykkel")
 
     def __init__(self, loke):
         # Initiate the handler
