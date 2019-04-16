@@ -10,6 +10,7 @@ from modules.atb import AtBHandler
 from modules.auto_response import AutoResponseHandler
 from modules.avinor import AvinorHandler
 from modules.brew import BrewHandler
+from modules.bysykkel import BysykkelHandler
 from modules.chartertur import CharterturHandler
 from modules.mannen import MannenHandler
 from modules.ruter import RuterHandler
@@ -26,6 +27,7 @@ if __name__ == '__main__':
     AutoResponseHandler(loke)
     AvinorHandler(loke)
     BrewHandler(loke)
+    BysykkelHandler(loke)
     CharterturHandler(loke)
     MannenHandler(loke)
     RuterHandler(loke)
