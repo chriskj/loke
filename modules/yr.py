@@ -48,7 +48,7 @@ class YrHandler(LokeEventHandler):
                 for item in xml.find('text').find('location').findall('time'):
                     data[item.attrib['from']] = {
                         'date': datetime.strptime(item.attrib['from'], "%Y-%m-%d"),
-                        'text': item.find('body').text.replace('<strong>','').replace('</strong>',''),
+                        #'text': item.find('body').text.replace('<strong>','').replace('</strong>',''),
                     }
             
             for item in xml.find('tabular').findall('time'):
