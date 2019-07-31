@@ -144,7 +144,7 @@ class BrewHandler(LokeEventHandler):
         # .brew help
         brewmatch = re.match(r'\.brew help', event['text'], re.I)
         if brewmatch:
-            self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='*Available commands:*\n.brew - _list brews_\n.brew add - _add new brew_\n.brew <date> - _Show information about brew_\n.brew <date> add <key> <description> - _Add custom element to brew_\n.brew <date> del <key> - _Delete custom element from brew_\n.brew <date> gravity add <date> <gravity> - _Add measured gravity_\n.brew <date> gravity del <date> - _Delete measured gravity_')
+            self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='Available commands - See https://github.com/chriskj/loke/blob/master/README.md#brew')    
             return
 
         # List all brews. Trigger on call to 
