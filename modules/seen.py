@@ -40,7 +40,7 @@ class SeenHandler(LokeEventHandler):
         seenmatch = re.match(r'\.seen <@(.*)>', event['text'], re.I)
         if seenmatch:
             userid = seenmatch.group(1)
-            self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='<@%s> was last seen: %s' % (userid, time.strftime('%d %B %Y - %H:%M:%S', time.localtime(self.presence_last_seen[userid]))))
+            self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], text='<@%s> was last seen: %s' % (userid, time.strftime('%d %B %Y - %H:%M:%S', time.localtime(self.presence_last_seen[userid]))))
             return
 
         # Trigger on call to .seenall - List all "last seen" timestamps
@@ -49,7 +49,7 @@ class SeenHandler(LokeEventHandler):
             sorted_response = sorted(self.presence_last_seen.items(), key=operator.itemgetter(1), reverse=True)
             for key, value in sorted_response:
                 response = '%s<@%s> - %s\n' % (response, key, time.strftime('%d %B %Y - %H:%M:%S', time.localtime(value)))
-            self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='%s' % (response))
+            self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], text='%s' % (response))
             return
 
 

@@ -1,5 +1,5 @@
 # coding=UTF-8
-from slackclient import SlackClient
+import slack
 import time
 
 
@@ -26,62 +26,60 @@ class Loke(object):
         #Function for the handlers to register themselves
         self._handlers.append(handler)
 
-    def handle_message(self, event):
+    def handle_message(self, **payload):
         # A message is recieved from Slack
+        event = payload['data']
         if event['text'] == '.modules':
-            self.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='*Loaded modules*\n%s' % ('\n'.join([' - %s' % (module.handler_version()) for module in self._handlers])))
+            self.sc.chat_postMessage(
+                 as_user="true:",
+                 channel=event['channel'], 
+                 text='*Loaded modules*\n%s' % ('\n'.join([' - %s' % (module.handler_version()) for module in self._handlers]))
+             )
+
+        for handler in self._handlers:
+            handler.handle_message(event)
+
         return
 
-    def handle_presence_change(self, event):
+    def handle_presence_change(self, **payload):
+        event = payload['data']
         # A user changes state active/inactive
+        for handler in self._handlers:
+            handler.handle_presence_change(event)
         return
+
+    def handle_hello(self, **payload):
+        presence_sub_ids = []
+        users = self.sc.api_call("users.list")
+        
+        for user in users['members']:
+            presence_sub_ids.append(user['id'])
+        
+        presence_sub_json = {"type": "presence_sub", "ids": presence_sub_ids}
+        self.rtmclient.send_over_websocket(payload=presence_sub_json)
 
     def init(self):
         # Initiate Slack connection
-        self.sc = SlackClient(self.config['token'])
-        if not self.sc.rtm_connect():
-            raise SystemExit(1, "Connection Failed, invalid token?")
+        self.rtmclient = slack.RTMClient(token=self.config['token'])
+        self.sc = slack.WebClient(self.config['token'])
         return self
 
     def loop(self):
         # Main procedure
         while True:
-            new_events = self.sc.rtm_read() # Data from Slack
-            for event in new_events:
-                #print(event) # Debug
-                try:
-                    if event['type'] == "message":
-                        self.handle_message(event)
-                        for handler in self._handlers:
-                            handler.handle_message(event)
+            self.rtmclient.run_on(event='message')(self.handle_message)
+            self.rtmclient.run_on(event='presence_change')(self.handle_presence_change)
+            self.rtmclient.run_on(event='hello')(self.handle_hello)
+            self.rtmclient.start()
 
-                    if event['type'] == "presence_change":
-                        self.handle_presence_change(event)
-                        for handler in self._handlers:
-                            handler.handle_presence_change(event)
-
-                    # Initial event - subscribe to presence change on all users in channel (Not default as of Jan 18)
-                    if event['type'] == "hello":
-                        print('Subscribing to prescence change')
-
-                        presence_sub_ids = []
-                        users = self.sc.api_call("users.list")
-
-                        for user in users['members']:
-                            presence_sub_ids.append(user['id'])
-
-                        presence_sub_json = {"type": "presence_sub", "ids": presence_sub_ids}
-                        self.sc.server.send_to_websocket(presence_sub_json)
+            # except KeyError:
+            #     # TODO(vegawe): When does this happen? Should not be necessary
+            #     print("Key not found in dict")
+            #     print(event)
 
 
-                except KeyError:
-                    # TODO(vegawe): When does this happen? Should not be necessary
-                    print("Key not found in dict")
-                    print(event)
-
-
-            if round(time.time()) % 10 == 0: # Run handle_loop() each 10 seconds
-                for handler in self._handlers:
-                    handler.handle_loop()
-            time.sleep(1)
+            # if round(time.time()) % 10 == 0: # Run handle_loop() each 10 seconds
+            #     for handler in self._handlers:
+            #         handler.handle_loop()
+            # time.sleep(1)
 

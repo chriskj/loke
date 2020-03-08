@@ -69,7 +69,7 @@ class AtBHandler(LokeEventHandler):
                         else: # Show time if it's more than 10 minutes
                             attachment[0]['fields'][-1]['value'] += '%s%s - %s %s\n' % (ca, trip['DepartureTime'].strftime('%H:%M'), trip['LineNumber'], trip['LineDestination'])
                     attachment[0]['fields'][-1]['value'] += '```'        
-                self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
+                self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
 
         return
 

@@ -38,7 +38,7 @@ class MannenHandler(LokeEventHandler):
 
             response += svar
 
-            self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='%s' % (response))
+            self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], text='%s' % (response))
             return
 
         return

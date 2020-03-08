@@ -42,7 +42,7 @@ class AutoResponseHandler(LokeEventHandler):
                 else:
                     match = False
                 if match:
-                    self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text=response['response'])
+                    self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], text=response['response'])
                     break # Don't repeat same response for multiple hits on same word
 
     def handle_presence_change(selv, event):

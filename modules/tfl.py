@@ -41,7 +41,7 @@ class TfLHandler(LokeEventHandler):
                     "color": "#aaaaaa"
                 }]
 
-                self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
+                self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
                 return
 
             tflmatch = re.match(r'\.tfl (.*)', event['text'], re.I)
@@ -74,7 +74,7 @@ class TfLHandler(LokeEventHandler):
 
                     })
 
-                self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
+                self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
                 return
 
         # A message is recieved from Slack

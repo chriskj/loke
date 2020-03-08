@@ -37,6 +37,4 @@ if __name__ == '__main__':
     YrHandler(loke)
     WeatherHandler(loke)
 
-
-    
     loke.loop() # Main

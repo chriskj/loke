@@ -35,13 +35,13 @@ class BrewHandler(LokeEventHandler):
                 'short': 'true'
             })
 
-            self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
+            self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
 
             if 'files' in self.brews[brew].keys():
                 for fil in self.brews[brew]['files']:
                     filename = '%s%s-%s' % (self.loke.config['brewfiles'], brew, fil)
                     with open(filename, 'rb') as data:
-                        res = self.loke.sc.api_call("files.upload", channels=event['channel'], filename=fil, file=data)
+                        res = self.loke.sc.files_upload(channels=event['channel'], filename=fil, file=data)
 
     def __init__(self, loke):
         # Initiate the handler
@@ -134,7 +134,7 @@ class BrewHandler(LokeEventHandler):
         if brewmatch:
             self.brews['%s' % (len(self.brews)+1)] = {}
             self.brews['%s' % (len(self.brews))]['gravity'] = []
-            self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='Brew %s added!' % (len(self.brews)))
+            self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], text='Brew %s added!' % (len(self.brews)))
             # Save data
             with open(self.loke.config['brew'], mode='w') as outfile:
                 json.dump(self.brews, outfile, sort_keys=True, indent=4)
@@ -144,14 +144,14 @@ class BrewHandler(LokeEventHandler):
         # .brew help
         brewmatch = re.match(r'\.brew help', event['text'], re.I)
         if brewmatch:
-            self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='Available commands - See https://github.com/chriskj/loke/blob/master/README.md#brew')    
+            self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], text='Available commands - See https://github.com/chriskj/loke/blob/master/README.md#brew')    
             return
 
         # List all brews. Trigger on call to 
         # .brew 
         brewmatch = re.match(r'\.brew', event['text'], re.I)
         if brewmatch:
-            self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='*List of brews:*\n%s' % ('\n'.join(['%s - %s :: %s' % (key, self.brews[key].get('brewdate', 'Unknown date'), self.brews[key].get('name', 'No Name')) for key, brew in sorted(self.brews.items(), key=lambda i: int(i[0]))])))
+            self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], text='*List of brews:*\n%s' % ('\n'.join(['%s - %s :: %s' % (key, self.brews[key].get('brewdate', 'Unknown date'), self.brews[key].get('name', 'No Name')) for key, brew in sorted(self.brews.items(), key=lambda i: int(i[0]))])))
 
             return
 
@@ -185,7 +185,7 @@ class BrewHandler(LokeEventHandler):
                 'value': '```%s```' % ('\n'.join(['%s %s %s %s' % (misc['use'].ljust(10), misc['time'].ljust(6), misc['name'].ljust(20), misc['amount']) for (misc) in sorted(beer.miscs, key=lambda x: int(x['time']))])),
             })
 
-            self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
+            self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
 
             return
 

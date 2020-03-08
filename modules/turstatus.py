@@ -47,7 +47,7 @@ class TurstatusHandler(LokeEventHandler):
                 ],
                 "color": "#F35A00"
             }]
-            self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
+            self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
             return
 
     def handle_presence_change(self, event):
@@ -61,7 +61,7 @@ class TurstatusHandler(LokeEventHandler):
             if self.presence_rate_limit[user] == self._get_today():
                 return # Have already nagged today
             self.presence_rate_limit[user] = self._get_today()
-            self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=config['chan_general'], text='<@%s> is alive!! Skal han booke fly mon tro?!' % user)
+            self.loke.sc.chat_postMessage(as_user="true:", channel=config['chan_general'], text='<@%s> is alive!! Skal han booke fly mon tro?!' % user)
 
     def _get_today(self):
         now = time.time()

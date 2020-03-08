@@ -28,7 +28,7 @@ class WeatherHandler(LokeEventHandler):
                 city = self.loke.config['weather_default']
             forecast = forecastio.load_forecast(self.loke.config['weather_apikey'], self.loke.config['weather'][city][0], self.loke.config['weather'][city][1])
             byDay = forecast.daily()
-            self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='%s weather forecast: %s' % (city, byDay.summary))
+            self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], text='%s weather forecast: %s' % (city, byDay.summary))
             return
 
 

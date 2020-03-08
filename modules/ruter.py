@@ -31,7 +31,7 @@ class RuterHandler(LokeEventHandler):
 
             stationname = rutermatch.group(1).lower().strip()
             if stationname not in stops:
-                self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='%s not found in Ruter database' % stationname)
+                self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], text='%s not found in Ruter database' % stationname)
                 return
 
             attachment = [{
@@ -51,7 +51,7 @@ class RuterHandler(LokeEventHandler):
                     'short': 'true'
                 })
 
-            self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
+            self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
         return
 
     def handle_presence_change(self, event):

@@ -37,7 +37,7 @@ class AvinorHandler(LokeEventHandler):
 
         if avinormatch and not flightnomatch:
             message = '*Error*: Unknown syntax - use .avinor <flightno> _<airport> <date>_ \nExample: _.avinor SK377 TRD 2017-12-24_'
-            self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text=message)
+            self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], text=message)
             return
 
         if flightnomatch:
@@ -75,10 +75,10 @@ class AvinorHandler(LokeEventHandler):
                         'short': 'false'
                     })
 
-                self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
+                self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
             except: # flight was not found
                 message = "*Error:* Flight %s at %s the %s was not found" % (avinormatch.group(1).upper(), airport, date)
-                self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text=message)
+                self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], text=message)
 
         avinormatch = re.match(r'\.avinorwatch (.*) (.*) (.*)', event['text'], re.I) # Regex pattern to see if message received is .avinorwatch with 3 arguments. This will add flight to watchlist.
         if avinormatch:
@@ -104,12 +104,12 @@ class AvinorHandler(LokeEventHandler):
             if flight.arrdep == 'D': # Departure comparison of watchlist to flight information and update watchlist if data has changed
                 if self.watchlist[item] != ('%s:%s:%s:%s' % (flight.schedule_time, getattr(flight, 'statusname', 'No status available'), getattr(flight, 'statustime', flight.schedule_time), flight.gate)):
                     message = "*Changed* - Flight: %s (%s)\n%s (%s) - %s (%s)\nTime: %s\nStatus: %s - %s\nGate: %s" % (flight.flightno, flight.airlinename, flight.localairport.name, flight.localairport.code, flight.remoteairport.name, flight.remoteairport.code, datetime.strftime(flight.schedule_time, '%H:%M'), getattr(flight, 'statusname', 'No status available'), datetime.strftime(getattr(flight, 'statustime', flight.schedule_time), '%H:%M'), flight.gate)
-                    self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=self.loke.config['chan_kjonsvik'], text=message)
+                    self.loke.sc.chat_postMessage(as_user="true:", channel=self.loke.config['chan_kjonsvik'], text=message)
                     self.watchlist[('%s#%s#%s' % (flight.localairport.code, flight.flightno, flight.schedule_time))] = '%s:%s:%s:%s' % (flight.schedule_time, getattr(flight, 'statusname', 'No status available'), getattr(flight, 'statustime', flight.schedule_time), flight.gate)
             else: # Arrival comparison of watchlist to flight information and update watchlist if data has changed
                 if self.watchlist[item] != ('%s:%s:%s:%s' % (flight.schedule_time, getattr(flight, 'statusname', 'No status available'), getattr(flight, 'statustime', flight.schedule_time), flight.belt)):
                     message = "*Changed* - Flight: %s (%s)\n%s (%s) - %s (%s)\nTime: %s\nStatus: %s - %s\nBelt: %s" % (flight.flightno, flight.airlinename, flight.remoteairport.name, flight.remoteairport.code, flight.localairport.name, flight.localairport.code, datetime.strftime(flight.schedule_time, '%H:%M'), getattr(flight, 'statusname', 'No status available'), datetime.strftime(getattr(flight, 'statustime', flight.schedule_time), '%H:%M'), flight.belt)
-                    self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=self.loke.config['chan_kjonsvik'], text=message)
+                    self.loke.sc.chat_postMessage(as_user="true:", channel=self.loke.config['chan_kjonsvik'], text=message)
                     self.watchlist[('%s#%s#%s' % (flight.localairport.code, flight.flightno, flight.schedule_time))] = '%s:%s:%s:%s' % (flight.schedule_time, getattr(flight, 'statusname', 'No status available'), getattr(flight, 'statustime', flight.schedule_time), flight.belt)
                 
         return

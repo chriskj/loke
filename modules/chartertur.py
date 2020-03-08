@@ -61,7 +61,7 @@ class CharterturHandler(LokeEventHandler):
             for plass in turer:
                 response += '%s\n' % (plass)
             response += '```'
-            self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], text='%s' % (response))
+            self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], text='%s' % (response))
             return
 
         return

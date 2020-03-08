@@ -103,7 +103,7 @@ class BysykkelHandler(LokeEventHandler):
             
             
             
-            self.loke.sc.api_call("chat.postMessage", as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))    
+            self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))    
 
         
 
