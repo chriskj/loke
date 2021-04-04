@@ -1,0 +1,33 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+appdirs = "*"
+cached-property = "*"
+certifi = "*"
+chardet = "*"
+cookies = "*"
+dateutils = "*"
+defusedxml = "*"
+idna = "*"
+isodate = "*"
+lxml = "==4.6.3"
+python-dateutil = "*"
+python-forecastio = "*"
+pytz = "*"
+requests = "*"
+requests-toolbelt = "*"
+responses = "*"
+six = "*"
+slackclient = "*"
+urllib3 = "*"
+websocket_client = "*"
+zeep = "*"
+slack = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.8"
