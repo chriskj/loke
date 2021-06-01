@@ -1,7 +1,8 @@
+-i https://pypi.python.org/simple/
 aiohttp==3.7.4.post0
 appdirs==1.4.4
 async-timeout==3.0.1
-attrs==20.3.0
+attrs==21.2.0
 cached-property==1.5.2
 certifi==2020.12.5
 chardet==4.0.0
@@ -22,8 +23,8 @@ responses==0.13.2
 six==1.15.0
 slack==0.0.2
 slackclient==2.9.3
-typing-extensions==3.7.4.3
-urllib3==1.26.4
+typing-extensions==3.10.0.0
+urllib3==1.26.5
 websocket-client==0.58.0
 yarl==1.6.3
 zeep==4.0.0
