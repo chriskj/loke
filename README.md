@@ -6,6 +6,12 @@ Install required modules into a virtualenv (python3) by using pip -r requirement
 To choose what modules to be used, comment/uncomment in main.py (both import-statements and the lines where they are used).
 Also make sure you change the name config.py-sample, as well as the the files in the data/-folder so they will be usable.
 
+## Docker
+Docker appuser is running under uid 5050. Make sure uid 5050 have write access to the data folder, and map the data folder in the following way
+```
+docker run -v /home/loke/lokedata/:/app/data --restart unless-stopped -d loke:latest
+```
+
 ## Modules
 
 ### AtB
