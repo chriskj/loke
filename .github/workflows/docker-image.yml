@@ -27,4 +27,4 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           push: true
-          tags: chriskj/loke:$(date +%s)
+          tags: chriskj/loke:${{ github.sha }}
