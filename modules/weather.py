@@ -1,11 +1,11 @@
 # coding=UTF-8
 import re
-import forecastio
+import requests
 
 from loke import LokeEventHandler
 
 class WeatherHandler(LokeEventHandler):
-    # Handler to fetch weather information from forecast.io (Darksky)
+    # Handler to fetch weather information from Open-Meteo
 
     def handler_version(self):
         # Handler information
@@ -26,9 +26,46 @@ class WeatherHandler(LokeEventHandler):
             city = weathermatch.group(1).title()
             if city == '':
                 city = self.loke.config['weather_default']
-            forecast = forecastio.load_forecast(self.loke.config['weather_apikey'], self.loke.config['weather'][city][0], self.loke.config['weather'][city][1])
-            byDay = forecast.daily()
-            self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], text='%s weather forecast: %s' % (city, byDay.summary))
+            coordinates = self.loke.config['weather'].get(city)
+            if not coordinates:
+                self.loke.sc.chat_postMessage(
+                    channel=event['channel'],
+                    text="I don't know the place %s" % city,
+                )
+                return
+
+            response = requests.get(
+                'https://api.open-meteo.com/v1/forecast',
+                params={
+                    'latitude': coordinates[0],
+                    'longitude': coordinates[1],
+                    'daily': (
+                        'temperature_2m_max,temperature_2m_min,'
+                        'precipitation_probability_max'
+                    ),
+                    'forecast_days': 3,
+                    'timezone': 'auto',
+                },
+                timeout=15,
+            )
+            response.raise_for_status()
+            daily = response.json()['daily']
+            forecast_lines = []
+            for date, low, high, precipitation in zip(
+                daily['time'],
+                daily['temperature_2m_min'],
+                daily['temperature_2m_max'],
+                daily['precipitation_probability_max'],
+            ):
+                forecast_lines.append(
+                    '%s: %.1f–%.1f °C, precipitation %s%%'
+                    % (date, low, high, precipitation)
+                )
+            self.loke.sc.chat_postMessage(
+                channel=event['channel'],
+                text='*%s weather forecast*\n%s'
+                % (city, '\n'.join(forecast_lines)),
+            )
             return
 
 

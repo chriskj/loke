@@ -31,7 +31,7 @@ class YrHandler(LokeEventHandler):
             if place in self.loke.config['yr_places']:
                 url = self.loke.config['yr_places'][place]
             else:
-                self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], text='I don\'t know the place %s' % place)
+                self.loke.sc.chat_postMessage(channel=event['channel'], text='I don\'t know the place %s' % place)
                 return
 
             data = requests.get(url).text
@@ -78,10 +78,10 @@ class YrHandler(LokeEventHandler):
                 attachment[0]['fields'].append({
                     'title': datetime.strftime(entry['date'], "%A %d. %B").capitalize(),
                     'value': '%s\n\nTemperatur:\n%s - %s - %s - %s\n\nVind:\n%s, %s, %s, %s' % (entry.get('text', ''), entry.get('temp0', '  '), entry.get('temp1', '  '),entry.get('temp2', '  '),entry.get('temp3', '  '),entry.get('windspeed0', ''),entry.get('windspeed1', ''),entry.get('windspeed2', ''),entry.get('windspeed3', ''),),
-                    'short': 'false'
+                    'short': False
                 })
                 
-            self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
+            self.loke.sc.chat_postMessage(channel=event['channel'], attachments=attachment)
             return
 
     def handle_presence_change(self, event):

@@ -78,7 +78,7 @@ class BysykkelHandler(LokeEventHandler):
             attachment[0]['fields'].append({
                 'title': 'Bikes available 1/1',
                 'value': '```',
-                'short': 'true'
+                'short': True
             })
 
             for station in sorted(stationstatus, key=lambda x: stations[x['station_id']]['name'])[0:num_stations]:
@@ -92,7 +92,7 @@ class BysykkelHandler(LokeEventHandler):
             attachment[0]['fields'].append({
                 'title': '2/2',
                 'value': '```',
-                'short': 'true'
+                'short': True
             })
 
             for station in sorted(stationstatus, key=lambda x: stations[x['station_id']]['name'])[num_stations:]:
@@ -103,7 +103,7 @@ class BysykkelHandler(LokeEventHandler):
             
             
             
-            self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))    
+            self.loke.sc.chat_postMessage(channel=event['channel'], attachments=attachment)
 
         
 

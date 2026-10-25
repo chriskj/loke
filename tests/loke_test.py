@@ -1,63 +1,118 @@
 # coding=UTF-8
-import os, sys
-test_folder = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(os.path.join(test_folder, '.'))
-sys.path.append(os.path.join(test_folder, '..'))
-
-import logging
-import mock
+import os
+import sys
 import unittest
+from types import SimpleNamespace
+from unittest import mock
 
-from config import config
-from loke import Loke
+
+TEST_FOLDER = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, os.path.join(TEST_FOLDER, '..'))
+
+from loke import Loke  # noqa: E402
+
+
+class RecordingHandler:
+    def __init__(self):
+        self.messages = []
+        self.presence_events = []
+
+    def handler_version(self):
+        return "Recording"
+
+    def handle_message(self, event):
+        self.messages.append(event)
+
+    def handle_presence_change(self, event):
+        self.presence_events.append(event)
+
 
 class LokeTestCase(unittest.TestCase):
     def setUp(self):
-        config['auto_response'] = os.path.join(test_folder, '..', 'auto_response.json')
-        self.sc_mock = mock.Mock()
-        self.loke = Loke()
-        self.loke.sc = self.sc_mock
+        self.loke = Loke({'ownid': 'U_BOT'})
+        self.loke.sc = mock.Mock()
+        self.handler = RecordingHandler()
+        self.loke.register_handler(self.handler)
 
-    def test_no_auto_response_no_fjasefisken(self):
-        self.loke.handle_message( {'user': 'U0HCKMF7B', 'text': 'Fjase fisken fjaser om fjasefisken', 'channel': 'general'})
-        assert not self.sc_mock.api_call.called, 'method should not have been called'
+    def test_dispatches_normal_message(self):
+        event = {'user': 'U_USER', 'text': '.hello', 'channel': 'C1'}
 
-    def test_auto_response_to_snylteagurk(self):
-        self.loke.handle_message( {'user': 'U0HCKMF7B', 'text': 'hello snylteagurk tror jeg', 'channel': 'general'})
-        self.sc_mock.api_call.assert_called_once_with("chat.postMessage", as_user="true:",
-                channel='general', text='Sylteagurk er gr\xc3\xb8nnsaken som tok drepen p\xc3\xa5 de norr\xc3\xb8ne gudene...')
+        self.loke.handle_message(event)
 
-    def test_auto_response_with_exact_match(self):
-        self.loke.handle_message( {'user': 'U0HCKMF7B', 'text': 'Dro en tur', 'channel': 'general'})
-        self.sc_mock.api_call.assert_called_once_with("chat.postMessage", as_user="true:",
-                channel='general', text='Turan som t\xc3\xa6lle!!')
+        self.assertEqual([event], self.handler.messages)
 
-    def test_auto_response_with_comma(self):
-        self.loke.handle_message( {'user': 'U0HCKMF7B', 'text': 'Dro en tur, med komma', 'channel': 'general'})
-        self.sc_mock.api_call.assert_called_once_with("chat.postMessage", as_user="true:",
-                channel='general', text='Turan som t\xc3\xa6lle!!')
+    def test_ignores_bot_and_message_change_events(self):
+        self.loke.handle_message(
+            {'bot_id': 'B1', 'text': '.hello', 'channel': 'C1'}
+        )
+        self.loke.handle_message(
+            {
+                'user': 'U_USER',
+                'subtype': 'message_changed',
+                'text': '.hello',
+                'channel': 'C1',
+            }
+        )
 
-    def test_auto_response_multiple_match(self):
-        self.loke.handle_message( {'user': 'U0HCKMF7B', 'text': 'hello snylteagurk tror jeg sylteagurk', 'channel': 'general'})
-        self.sc_mock.api_call.assert_called_once_with("chat.postMessage", as_user="true:",
-                channel='general', text='Sylteagurk er gr\xc3\xb8nnsaken som tok drepen p\xc3\xa5 de norr\xc3\xb8ne gudene...')
+        self.assertEqual([], self.handler.messages)
 
-    def test_auto_response_no_ratio_match_for_tur(self):
-        self.loke.handle_message( {'user': 'U0HCKMF7B', 'text': 'utur', 'channel': 'general'})
-        assert not self.sc_mock.api_call.called, 'method should not have been called'
+    def test_modules_command_uses_modern_chat_post_message(self):
+        self.loke.handle_message(
+            {'user': 'U_USER', 'text': '.modules', 'channel': 'C1'}
+        )
 
-    def test_handle_presence_change_valid(self):
-        self.loke.handle_presence_change( {'user': 'dummy', 'presence': 'active'})
-        self.sc_mock.api_call.assert_called_once_with("chat.postMessage", as_user="true:",
-                channel=config['chan_general'], text='<@dummy> is alive!! Skal han booke fly mon tro?!')
+        self.loke.sc.chat_postMessage.assert_called_once_with(
+            channel='C1', text='*Loaded modules*\n - Recording'
+        )
 
-    def test_handle_presence_change_rate_limit(self):
-        self.loke.handle_presence_change( {'user': 'dummy', 'presence': 'active'})
-        self.loke.handle_presence_change( {'user': 'dummy', 'presence': 'active'})
-        self.loke.handle_presence_change( {'user': 'dummy', 'presence': 'active'})
-        self.sc_mock.api_call.assert_called_once_with("chat.postMessage", as_user="true:",
-                channel=config['chan_general'], text='<@dummy> is alive!! Skal han booke fly mon tro?!')
+    def test_socket_mode_request_is_acknowledged_and_dispatched(self):
+        client = mock.Mock()
+        request = SimpleNamespace(
+            envelope_id='env-1',
+            type='events_api',
+            payload={
+                'event': {
+                    'type': 'message',
+                    'user': 'U_USER',
+                    'text': '.hello',
+                    'channel': 'C1',
+                }
+            },
+        )
+
+        self.loke._process_socket_mode_request(client, request)
+
+        response = client.send_socket_mode_response.call_args.args[0]
+        self.assertEqual('env-1', response.envelope_id)
+        self.assertEqual(1, len(self.handler.messages))
+
+    @mock.patch('loke.SocketModeClient')
+    @mock.patch('loke.WebClient')
+    def test_init_uses_environment_tokens(self, web_client, socket_client):
+        socket_client.return_value.socket_mode_request_listeners = []
+        with mock.patch.dict(
+            os.environ,
+            {
+                'SLACK_BOT_TOKEN': 'xoxb-test',
+                'SLACK_APP_TOKEN': 'xapp-test',
+            },
+        ):
+            initialized = Loke({}).init()
+
+        web_client.assert_called_once_with(token='xoxb-test')
+        socket_client.assert_called_once_with(
+            app_token='xapp-test', web_client=web_client.return_value
+        )
+        self.assertIn(
+            initialized._process_socket_mode_request,
+            socket_client.return_value.socket_mode_request_listeners,
+        )
+
+    def test_init_reports_missing_credentials(self):
+        with mock.patch.dict(os.environ, {}, clear=True):
+            with self.assertRaisesRegex(ValueError, 'SLACK_BOT_TOKEN.*SLACK_APP_TOKEN'):
+                Loke({}).init()
+
 
 if __name__ == '__main__':
-    logging.getLogger().setLevel(logging.DEBUG)
     unittest.main()

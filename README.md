@@ -1,16 +1,78 @@
 # loke
-Loke, a simple bot
 
-Install required modules into a virtualenv (python3) by using pip -r requirements.txt
+Loke is a simple Slack command bot. It connects through the current Slack
+Events API using Socket Mode, so it does not need a public HTTP endpoint.
 
-To choose what modules to be used, comment/uncomment in main.py (both import-statements and the lines where they are used).
-Also make sure you change the name config.py-sample, as well as the the files in the data/-folder so they will be usable.
+## Set up the Slack app
+
+1. Open [Your Apps](https://api.slack.com/apps), choose **Create New App** and
+   **From an app manifest**. Select the workspace, choose YAML, and paste the
+   contents of [`slack-manifest.yaml`](slack-manifest.yaml).
+2. Under **Settings → Basic Information → App-Level Tokens**, generate a token
+   with the `connections:write` scope. Save the `xapp-...` value as
+   `SLACK_APP_TOKEN`.
+3. Under **Features → OAuth & Permissions**, choose **Install to Workspace**
+   (or **Reinstall to Workspace** after changing scopes). Save the
+   **Bot User OAuth Token** (`xoxb-...`) as `SLACK_BOT_TOKEN`.
+4. If the bot should accept direct messages, open **Features → App Home**,
+   enable the Messages tab, and allow users to send messages from it.
+5. Invite the app to every public or private channel in which it should read
+   and answer commands: `/invite @Loke`.
+
+The manifest subscribes to messages in public channels, private channels, DMs,
+and group DMs. It requests the matching history scopes plus `chat:write`.
+`files:read` and `files:write` are used by the Brew module; remove those two
+scopes if that module is disabled.
+
+> Slack's modern granular-permission apps cannot use the legacy RTM API or
+> `presence_sub`. As a result, presence-triggered behavior in `SeenHandler` and
+> `TurstatusHandler` is no longer invoked. `.seen` still records message
+> activity, and the other message commands continue to work.
+
+## Run locally
+
+Python 3.13 is the supported runtime.
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+cp config.py-sample config.py
+mkdir -p data
+cp data-examples/*.json-sample data/
+export SLACK_BOT_TOKEN='xoxb-...'
+export SLACK_APP_TOKEN='xapp-...'
+python main.py
+```
+
+Rename the copied sample data files to remove `-sample`, and update their paths
+and module-specific credentials in `config.py`. Choose which modules are loaded
+by commenting or uncommenting entries in `HANDLERS` in `main.py`. A module that
+cannot initialize is logged and skipped so it does not prevent the Slack bot
+from connecting.
+
+Run the Slack transport tests with:
+
+```bash
+python -m unittest discover -s tests -p '*_test.py'
+```
 
 ## Docker
-Docker appuser is running under uid 5050. Make sure uid 5050 have write access to the data folder, and map the data folder in the following way
+
+```bash
+docker build -t loke:latest .
+docker run \
+  --name loke \
+  --restart unless-stopped \
+  -e SLACK_BOT_TOKEN='xoxb-...' \
+  -e SLACK_APP_TOKEN='xapp-...' \
+  -v /home/loke/lokedata/:/app/data \
+  -d loke:latest
 ```
-docker run -v /home/loke/lokedata/:/app/data --restart unless-stopped -d loke:latest
-```
+
+The container runs as uid 5050, so that uid must have read/write access to the
+mounted data directory. Keep both Slack tokens out of the image and source
+control.
 
 ## Modules
 
