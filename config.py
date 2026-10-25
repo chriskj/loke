@@ -1,0 +1,39 @@
+# coding=UTF-8
+import os
+
+
+config = {
+    # Prefer setting these as environment variables. The bot token comes from
+    # OAuth & Permissions; the app token comes from Basic Information and must
+    # have the connections:write scope.
+    'bot_token': os.getenv('SLACK_BOT_TOKEN', ''),  # xoxb-...
+    'app_token': os.getenv('SLACK_APP_TOKEN', ''),  # xapp-...
+    'ownid': '',  # Optional bot user ID; bot_id events are ignored automatically
+
+    # Modules data files
+    'auto_response':    'data/auto_response.json', 
+    'last_seen':        'data/last_seen.json',
+    'brew':             'data/brew.json',
+    'brewfiles':        'data/brewfiles/',
+    'atbstops':         'data/atbstops.json',
+    'ruterstops':       'data/ruterstops.json',
+
+    # Module :: turstatus
+    'chan_general':     '',
+
+    # Module :: Yr
+    'yr_places': {
+        'Vancouver': 'https://www.yr.no/sted/Canada/British_Columbia/Vancouver/varsel.xml',
+        'Oslo':      'https://www.yr.no/sted/Norge/Oslo/Oslo/Oslo/varsel.xml',
+        'Trondheim': 'https://www.yr.no/sted/Norge/S%C3%B8r-Tr%C3%B8ndelag/Trondheim/Trondheim/varsel.xml',
+    },
+
+    # Module :: Weather (Open-Meteo; no API key required)
+    'weather': {
+        'Berlin': ['52.5161', '13.3770'],
+        'Gdansk': ['54.3482', '18.6543'],
+        'Trondheim': ['63.4306', '10.3952'],
+    },
+    'weather_default': 'Trondheim'
+}
+
