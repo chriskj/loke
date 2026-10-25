@@ -55,7 +55,7 @@ class AtBHandler(LokeEventHandler):
                     attachment[0]['fields'].append({
                         'title': '%s (id: %s)' % (stopname.title(), stop[0]['StopId']),
                         'value': '```',
-                        'short': 'true'
+                        'short': True
                     })
 
                     for trip in stop[:numreturns]: # Only fetch a list of $numreturns for each stop
@@ -69,7 +69,7 @@ class AtBHandler(LokeEventHandler):
                         else: # Show time if it's more than 10 minutes
                             attachment[0]['fields'][-1]['value'] += '%s%s - %s %s\n' % (ca, trip['DepartureTime'].strftime('%H:%M'), trip['LineNumber'], trip['LineDestination'])
                     attachment[0]['fields'][-1]['value'] += '```'        
-                self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
+                self.loke.sc.chat_postMessage(channel=event['channel'], attachments=attachment)
 
         return
 

@@ -4,12 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-dateutils = "*"
-python-forecastio = "*"
-slackclient = "*"
+python-dateutil = "*"
+pytz = "*"
+requests = "*"
+slack-sdk = ">=3.45,<4"
 zeep = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.8"
+python_version = "3.13"

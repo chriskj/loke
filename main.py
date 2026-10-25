@@ -1,4 +1,5 @@
 # coding=UTF-8
+import logging
 
 # Import core
 from loke import Loke
@@ -20,21 +21,35 @@ from modules.turstatus import TurstatusHandler
 from modules.yr import YrHandler
 from modules.weather import WeatherHandler
 
-if __name__ == '__main__':
-    loke = Loke(config).init() # Connect to Slack
-    
-    AtBHandler(loke)
-    AutoResponseHandler(loke)
-    AvinorHandler(loke)
-    BrewHandler(loke)
-    BysykkelHandler(loke)
-    CharterturHandler(loke)
-    MannenHandler(loke)
-    RuterHandler(loke)
-    SeenHandler(loke)
-    TfLHandler(loke)
-    TurstatusHandler(loke)
-    YrHandler(loke)
-    WeatherHandler(loke)
 
-    loke.loop() # Main
+HANDLERS = (
+    AtBHandler,
+    AutoResponseHandler,
+    AvinorHandler,
+    BrewHandler,
+    BysykkelHandler,
+    CharterturHandler,
+    MannenHandler,
+    RuterHandler,
+    SeenHandler,
+    TfLHandler,
+    TurstatusHandler,
+    YrHandler,
+    WeatherHandler,
+)
+
+
+if __name__ == '__main__':
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s %(levelname)s %(name)s: %(message)s',
+    )
+    loke = Loke(config).init()
+
+    for handler_class in HANDLERS:
+        try:
+            handler_class(loke)
+        except Exception:
+            logging.exception('Could not load module %s', handler_class.__name__)
+
+    loke.loop()

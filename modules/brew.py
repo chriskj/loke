@@ -1,5 +1,6 @@
 # coding=UTF-8
 import json
+import os
 import re
 import requests
 import xml.etree.ElementTree as ET
@@ -26,22 +27,24 @@ class BrewHandler(LokeEventHandler):
             attachment[0]['fields'].append({
                 'title': 'Info',
                 'value': '%s' % ('\n'.join(['%s :: %s' % (key, value) for (key, value) in sorted(self.brews[brew].items(), key=lambda x: x[0].lower()) if key != 'FG' and key != 'OG' and key != 'ABV' and key != 'gravity' and key != 'brewdate' and key != 'name' and key != 'files'])),
-                'short': 'true'
+                'short': True
             })
 
             attachment[0]['fields'].append({
                 'title': 'Details',
                 'value': '%s' % ('\n'.join(['%s :: %s' % (key, value) for (key, value) in sorted(self.brews[brew].items(), key=lambda x: x[0].lower()) if key == 'FG' or key == 'OG' or key == 'ABV' or (key == 'gravity' and len(value) > 2)])),
-                'short': 'true'
+                'short': True
             })
 
-            self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
+            self.loke.sc.chat_postMessage(channel=event['channel'], attachments=attachment)
 
             if 'files' in self.brews[brew].keys():
                 for fil in self.brews[brew]['files']:
                     filename = '%s%s-%s' % (self.loke.config['brewfiles'], brew, fil)
                     with open(filename, 'rb') as data:
-                        res = self.loke.sc.files_upload(channels=event['channel'], filename=fil, file=data)
+                        self.loke.sc.files_upload_v2(
+                            channel=event['channel'], filename=fil, file=data
+                        )
 
     def __init__(self, loke):
         # Initiate the handler
@@ -57,9 +60,45 @@ class BrewHandler(LokeEventHandler):
         # A user changes state active/inactive
         return
 
+    def _save_shared_files(self, event):
+        """Store files attached to a modern Events API message."""
+        brewmatch = re.match(r'\.brew (\d+) file add', event.get('text', ''), re.I)
+        if not brewmatch or brewmatch.group(1) not in self.brews:
+            return
+
+        brew_id = brewmatch.group(1)
+        headers = {'Authorization': 'Bearer %s' % self.loke.bot_token}
+        downloaded = False
+        for slack_file in event.get('files', []):
+            url = slack_file.get('url_private_download') or slack_file.get('url_private')
+            if not url or not slack_file.get('name'):
+                continue
+
+            response = requests.get(url, headers=headers, stream=True, timeout=30)
+            response.raise_for_status()
+            remote_name = os.path.basename(slack_file['name'])
+            filename = os.path.join(
+                self.loke.config['brewfiles'], '%s-%s' % (brew_id, remote_name)
+            )
+            with open(filename, 'wb') as local_file:
+                for chunk in response.iter_content(chunk_size=64 * 1024):
+                    if chunk:
+                        local_file.write(chunk)
+
+            self.brews[brew_id].setdefault('files', [])
+            self.brews[brew_id]['files'].append(remote_name)
+            downloaded = True
+
+        if downloaded:
+            with open(self.loke.config['brew'], mode='w') as outfile:
+                json.dump(self.brews, outfile, sort_keys=True, indent=4)
+
     def handle_message(self, event):
         # A message is recieved from Slack
 
+        if event.get('subtype') == 'file_share':
+            self._save_shared_files(event)
+            return
 
         # Add gravity measure to brew. Trigger on call to 
         # .brew <date> gravity add <date> <gravity>
@@ -134,7 +173,7 @@ class BrewHandler(LokeEventHandler):
         if brewmatch:
             self.brews['%s' % (len(self.brews)+1)] = {}
             self.brews['%s' % (len(self.brews))]['gravity'] = []
-            self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], text='Brew %s added!' % (len(self.brews)))
+            self.loke.sc.chat_postMessage(channel=event['channel'], text='Brew %s added!' % (len(self.brews)))
             # Save data
             with open(self.loke.config['brew'], mode='w') as outfile:
                 json.dump(self.brews, outfile, sort_keys=True, indent=4)
@@ -144,14 +183,14 @@ class BrewHandler(LokeEventHandler):
         # .brew help
         brewmatch = re.match(r'\.brew help', event['text'], re.I)
         if brewmatch:
-            self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], text='Available commands - See https://github.com/chriskj/loke/blob/master/README.md#brew')    
+            self.loke.sc.chat_postMessage(channel=event['channel'], text='Available commands - See https://github.com/chriskj/loke/blob/master/README.md#brew')
             return
 
         # List all brews. Trigger on call to 
         # .brew 
         brewmatch = re.match(r'\.brew', event['text'], re.I)
         if brewmatch:
-            self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], text='*List of brews:*\n%s' % ('\n'.join(['%s - %s :: %s' % (key, self.brews[key].get('brewdate', 'Unknown date'), self.brews[key].get('name', 'No Name')) for key, brew in sorted(self.brews.items(), key=lambda i: int(i[0]))])))
+            self.loke.sc.chat_postMessage(channel=event['channel'], text='*List of brews:*\n%s' % ('\n'.join(['%s - %s :: %s' % (key, self.brews[key].get('brewdate', 'Unknown date'), self.brews[key].get('name', 'No Name')) for key, brew in sorted(self.brews.items(), key=lambda i: int(i[0]))])))
 
             return
 
@@ -185,43 +224,9 @@ class BrewHandler(LokeEventHandler):
                 'value': '```%s```' % ('\n'.join(['%s %s %s %s' % (misc['use'].ljust(10), misc['time'].ljust(6), misc['name'].ljust(20), misc['amount']) for (misc) in sorted(beer.miscs, key=lambda x: int(x['time']))])),
             })
 
-            self.loke.sc.chat_postMessage(as_user="true:", channel=event['channel'], attachments=json.dumps(attachment))
+            self.loke.sc.chat_postMessage(channel=event['channel'], attachments=attachment)
 
             return
-
-        # Fetch files if a comment indicates so
-        if 'subtype' in event.keys():
-            comment = ''
-            if event['subtype'] == 'file_comment':
-                comment = event['comment']['comment']
-                url = event['file']['url_private']
-
-            if event['subtype'] == 'file_share':
-                if 'initial_comment' in event['file'].keys():
-                    comment = event['file']['initial_comment']['comment']
-                url = event['file']['url_private']
-
-            # Check if comment indicates fetching files
-            brewmatch = re.match(r'\.brew (\d+) file add', comment, re.I)
-            if brewmatch:
-                if len(self.brews[brewmatch.group(1)]) > 0:
-                    headers = {'Authorization': 'Bearer %s' % self.loke.config['token']} # Needed for authorization
-                    r = requests.get(url, headers=headers, stream=True)
-                    filename = '%s%s-%s' % (self.loke.config['brewfiles'], brewmatch.group(1), event['file']['name'])
-                    if r.status_code == 200:
-                        with open(filename, 'wb') as f:
-                            for chunk in r:
-                                f.write(chunk)
-                        if 'files' not in self.brews[brewmatch.group(1)].keys():
-                            self.brews[brewmatch.group(1)]['files'] = []
-                        self.brews[brewmatch.group(1)]['files'].append(event['file']['name']) # Let the json know we have a file uploaded
-                        # Save data
-                        with open(self.loke.config['brew'], mode='w') as outfile:
-                            json.dump(self.brews, outfile, sort_keys=True, indent=4)
-                    else:
-                        print("Download failed")
-
-
 
     def handle_loop(self):
         # handle_loop() is used by handlers to pick up data when it's not triggered by message og presence change (i.e. watch, countdowns++)
