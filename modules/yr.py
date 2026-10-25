@@ -7,8 +7,8 @@ import re
 from datetime import datetime
 
 # To get Norwegian names for months and days
-import locale
-locale.setlocale(locale.LC_ALL, 'nb_NO.utf8')
+# import locale
+# locale.setlocale(locale.LC_ALL, 'nb_NO.utf8')
 
 class YrHandler(LokeEventHandler):
     # Handler to show weather information from Yr

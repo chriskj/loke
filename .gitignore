@@ -3,7 +3,7 @@
 cache/
 
 # Live config
-config.py
+# config.py
 
 # live data files
 data/*.json
